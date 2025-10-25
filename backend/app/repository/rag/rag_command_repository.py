@@ -35,7 +35,7 @@ class RagCommandRepository:
                 # and does not include user input, so this f-string usage is safe.
                 # Do not modify to include user input directly.
                 placeholders = ','.join(['%s'] * len(queue_ids))
-                update_sql = f"UPDATE VectorSyncQueue SET status = 'processing' WHERE queue_id IN ({placeholders})"
+                update_sql = "UPDATE VectorSyncQueue SET status = 'processing' WHERE queue_id IN ({})".format(placeholders)
                 cursor.execute(update_sql, queue_ids)
                 self.db.commit()
                 
