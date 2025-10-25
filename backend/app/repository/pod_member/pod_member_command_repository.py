@@ -42,16 +42,12 @@ class PodMemberCommandRepository:
     ) -> bool:
         """참가자 정보 업데이트"""
         with self.db.cursor() as cursor:
-            allowed_columns = {
-                "amount": amount,
-                "place_start": place_start,
-                "place_end": place_end
-            }
-            allowed_column_names = {"amount", "place_start", "place_end"}
+            allowed_column_names = ("amount", "place_start", "place_end")
             set_clauses = []
             params = []
-            for col, val in allowed_columns.items():
-                if val is not None and col in allowed_column_names:
+            for col in allowed_column_names:
+                val = locals()[col]
+                if val is not None:
                     set_clauses.append(f"{col} = %s")
                     params.append(val)
             if not set_clauses:
