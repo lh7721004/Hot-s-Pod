@@ -11,22 +11,21 @@ from app.core.config import settings
 
 router = APIRouter(prefix="/rag", tags=["RAG Search"])
 
-# ✅ 전역 싱글톤 - Embedding 모델과 ChromaDB는 한 번만 초기화
+# ✅ Thread-Safe 싱글톤
 _rag_service_singleton = None
 _singleton_lock = Lock()
 
 def get_rag_service_singleton() -> RagService:
     """
-    RAG 서비스 싱글톤 인스턴스 반환
-    - Embedding 모델 (무거움)
-    - ChromaDB 클라이언트
-    이 두 가지는 앱 시작시 한 번만 로딩
+    Thread-Safe RAG 서비스 싱글톤
+    - Embedding 모델과 ChromaDB는 한 번만 로딩
     """
     global _rag_service_singleton
+    
     if _rag_service_singleton is None:
         with _singleton_lock:
             if _rag_service_singleton is None:
-                _rag_service_singleton = RagService(rag_query_repo=None)
+                _rag_service_singleton = RagService()  # ✅ 파라미터 없음
     
     return _rag_service_singleton
 
@@ -50,7 +49,7 @@ async def search_pods_with_rag(
         # ✅ 요청별로 독립적인 repository 생성 (Thread-Safe)
         rag_query_repo = RagQueryRepository(db)
         
-        # ✅ Repository를 주입하여 검색
+        # ✅ Repository를 명시적으로 전달 (필수 파라미터)
         retrieved_pods_data = rag_service.search(request.query, rag_query_repo)
         llm_answer = rag_service.generate_answer(request.query, retrieved_pods_data)
         

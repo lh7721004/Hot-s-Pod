@@ -54,7 +54,8 @@ manager = ConnectionManager()
 @router.websocket("/chat/{pod_id}")
 async def websocket_chat_endpoint(websocket: WebSocket, pod_id: str):
     await manager.connect(websocket, pod_id)
-      
+    
+    db = None  # ✅ None 초기화
     try:
         db = DatabaseConnectionPool.get_pool().connection()
         chat_repo = ChatCommandRepository(db)
@@ -96,5 +97,6 @@ async def websocket_chat_endpoint(websocket: WebSocket, pod_id: str):
             }, pod_id)
     
     finally:
-        db.close()
-        logger.info(f"🔒 DB connection closed for pod {pod_id}")
+        if db is not None:  # ✅ None 체크
+            db.close()
+            logger.info(f"🔒 DB connection closed for pod {pod_id}")

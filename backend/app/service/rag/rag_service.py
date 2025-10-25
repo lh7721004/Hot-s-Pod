@@ -5,14 +5,13 @@ from sentence_transformers import SentenceTransformer
 import chromadb
 from app.core.config import settings
 from app.repository.rag.rag_query_repository import RagQueryRepository
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 
 logger = logging.getLogger(__name__)
 
 class RagService:
-    def __init__(self, rag_query_repo: Optional[RagQueryRepository] = None):
+    def __init__(self):  # ✅ 파라미터 완전히 제거
         logger.info("🔄 Initializing RagService...")
-        self.rag_query_repo = rag_query_repo
         
         # ✅ Embedding 모델 - 싱글톤에서 한 번만 로딩
         self.embedding_model = SentenceTransformer(settings.EMBEDDING_MODEL_NAME)
@@ -26,23 +25,18 @@ class RagService:
         )
         logger.info("✅ ChromaDB collection ready")
 
-    def search(self, query: str, rag_query_repo: Optional[RagQueryRepository] = None) -> List[Dict[str, Any]]:
+    def search(self, query: str, rag_query_repo: RagQueryRepository) -> List[Dict[str, Any]]:
         """
-        RAG 검색 (repository를 외부에서 주입 가능)
+        RAG 검색
         
         Args:
             query: 검색 쿼리
-            rag_query_repo: 외부에서 주입할 repository (None이면 내부 repository 사용)
+            rag_query_repo: Repository (필수로 주입받음)
         """
         logger.info(f"🔍 RAG Search: '{query}'")
         
-        # ✅ Repository 선택: 외부 주입 > 내부 repository
-        repo = rag_query_repo if rag_query_repo is not None else self.rag_query_repo
-        
-        if repo is None:
-            raise ValueError("RagQueryRepository is not available")
-        
-        all_categories = repo.get_all_categories()
+        # ✅ 카테고리 검색
+        all_categories = rag_query_repo.get_all_categories()
         
         found_category_id = None
         for cat in all_categories:
@@ -50,12 +44,14 @@ class RagService:
                 found_category_id = cat['category_id']
                 break
         
+        # ✅ 장소 키워드 검색
         place_keyword = None
         for keyword in settings.PLACE_KEYWORDS:
             if keyword in query:
                 place_keyword = keyword
                 break
 
+        # ✅ 벡터 검색
         query_vector = self.embedding_model.encode(query).tolist()
         results = self.collection.query(
             query_embeddings=[query_vector],
@@ -69,7 +65,8 @@ class RagService:
         retrieved_pod_ids = [int(id_str) for id_str in results['ids'][0]]
         logger.info(f"🎯 Found {len(retrieved_pod_ids)} candidates")
 
-        final_pods = repo.filter_pods(
+        # ✅ RDB 필터링
+        final_pods = rag_query_repo.filter_pods(
             pod_ids=retrieved_pod_ids,
             place_keyword=place_keyword,
             category_id=found_category_id
@@ -79,9 +76,20 @@ class RagService:
         return final_pods
 
     def generate_answer(self, query: str, context_pods: List[Dict[str, Any]]) -> str:
+        """
+        LLM을 사용하여 답변 생성
+        
+        Args:
+            query: 사용자 질문
+            context_pods: 검색된 POD 목록
+            
+        Returns:
+            생성된 답변 문자열
+        """
         if not context_pods:
             return "죄송합니다, 관련된 소모임을 찾을 수 없습니다."
 
+        # ✅ 컨텍스트 생성
         context_str = "다음은 관련 소모임입니다:\n\n"
         for i, pod in enumerate(context_pods[:5], 1):
             context_str += f"[{i}번]\n"
@@ -89,6 +97,7 @@ class RagService:
             context_str += f"- 장소: {pod['place']}\n"
             context_str += f"- 일시: {pod['event_time']}\n\n"
         
+        # ✅ 프롬프트 생성
         prompt = f"""당신은 Hot's POD의 AI 어시스턴트입니다.
 아래 정보를 바탕으로 질문에 답변하세요.
 
@@ -101,6 +110,7 @@ class RagService:
 [답변]
 """
 
+        # ✅ LLM API 호출
         if settings.LLM_PROVIDER == 'API':
             headers = {
                 "Authorization": f"Bearer {settings.LLM_API_KEY}",

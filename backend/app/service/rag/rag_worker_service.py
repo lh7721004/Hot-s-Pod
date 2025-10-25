@@ -23,31 +23,37 @@ class RagWorkerService:
             metadata={"hnsw:space": "cosine"}
         )
         
-        self.db_connection = DatabaseConnectionPool.get_pool().connection()
-        self.rag_command_repo = RagCommandRepository(self.db_connection)
-        self.rag_query_repo = RagQueryRepository(self.db_connection)
-        
+        # ✅ DB 연결 제거 (매 루프마다 새로 생성)
         logger.info("✅ RAG Worker initialized")
 
     async def run_worker(self):
         logger.info("🚀 RAG Worker started")
         
         while True:
+            db = None  # ✅ 초기화
             try:
-                jobs = self.rag_command_repo.get_pending_jobs(limit=5)
+                # ✅ 매 루프마다 새 DB 연결
+                db = DatabaseConnectionPool.get_pool().connection()
+                rag_command_repo = RagCommandRepository(db)
+                rag_query_repo = RagQueryRepository(db)
+                
+                jobs = rag_command_repo.get_pending_jobs(limit=5)
                 
                 if jobs:
                     logger.info(f"📦 Found {len(jobs)} jobs")
                     for job in jobs:
-                        await self.process_job(job)
+                        await self.process_job(job, rag_command_repo, rag_query_repo)
                 else:
                     await asyncio.sleep(2)
                 
             except Exception as e:
                 logger.error(f"❌ Worker error: {e}")
                 await asyncio.sleep(5)
+            finally:
+                if db is not None:
+                    db.close()
 
-    async def process_job(self, job: dict):
+    async def process_job(self, job: dict, rag_command_repo: RagCommandRepository, rag_query_repo: RagQueryRepository):
         queue_id = job['queue_id']
         pod_id = job['pod_id']
         action_type = job['action_type']
@@ -56,19 +62,19 @@ class RagWorkerService:
         
         try:
             if action_type == 'upsert':
-                await self._process_upsert(pod_id)
+                await self._process_upsert(pod_id, rag_query_repo)
             elif action_type == 'delete':
                 await self._process_delete(pod_id)
             
-            self.rag_command_repo.delete_job(queue_id)
+            rag_command_repo.delete_job(queue_id)
             logger.info(f"✅ Job {queue_id} completed")
             
         except Exception as e:
             logger.error(f"❌ Job {queue_id} failed: {e}")
-            self.rag_command_repo.update_job_status(queue_id, 'failed')
+            rag_command_repo.update_job_status(queue_id, 'failed')
 
-    async def _process_upsert(self, pod_id: int):
-        pod_details = self.rag_query_repo.get_pod_details_for_vectorizing(pod_id)
+    async def _process_upsert(self, pod_id: int, rag_query_repo: RagQueryRepository):
+        pod_details = rag_query_repo.get_pod_details_for_vectorizing(pod_id)
         
         if not pod_details:
             raise ValueError(f"Pod {pod_id} not found")
