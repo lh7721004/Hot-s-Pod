@@ -1,4 +1,4 @@
-# app/socket/websocket.py (개선 버전)
+# app/socket/websocket.py
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from typing import Dict, List
 import json
