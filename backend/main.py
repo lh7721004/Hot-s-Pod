@@ -1,4 +1,3 @@
-# app/main.py (수정)
 import threading
 import asyncio
 from contextlib import asynccontextmanager
