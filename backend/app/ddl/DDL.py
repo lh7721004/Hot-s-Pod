@@ -341,7 +341,9 @@ def execute_ddl(connection):
             
             if delimiter in line:
                 if delimiter == "$$":
-                    current_statement = current_statement.replace("$$", "")
+                    if current_statement.rstrip().endswith("$$"):
+                        current_statement = current_statement.rstrip()
+                        current_statement = current_statement[:-2].rstrip()
                 statements.append(current_statement.strip())
                 current_statement = ""
     
