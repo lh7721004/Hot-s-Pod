@@ -339,11 +339,12 @@ def execute_ddl(connection):
         if line and not line.startswith('/*') and not line.startswith('--'):
             current_statement += line + " "
             
-            if delimiter in line:
-                if delimiter == "$$":
-                    if current_statement.rstrip().endswith("$$"):
-                        current_statement = current_statement.rstrip()
-                        current_statement = current_statement[:-2].rstrip()
+            if delimiter in line and delimiter == "$$" and current_statement.rstrip().endswith("$$"):
+                current_statement = current_statement.rstrip()
+                current_statement = current_statement[:-2].rstrip()
+                statements.append(current_statement.strip())
+                current_statement = ""
+            elif delimiter in line:
                 statements.append(current_statement.strip())
                 current_statement = ""
     
