@@ -29,3 +29,4 @@
 
 # Backend
 /backend/.env
+__pycache__
