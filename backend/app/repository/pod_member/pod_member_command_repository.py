@@ -42,24 +42,21 @@ class PodMemberCommandRepository:
     ) -> bool:
         """참가자 정보 업데이트"""
         with self.db.cursor() as cursor:
-            updates = []
+            allowed_columns = {
+                "amount": amount,
+                "place_start": place_start,
+                "place_end": place_end
+            }
+            set_clauses = []
             params = []
-            
-            if amount is not None:
-                updates.append("amount = %s")
-                params.append(amount)
-            if place_start is not None:
-                updates.append("place_start = %s")
-                params.append(place_start)
-            if place_end is not None:
-                updates.append("place_end = %s")
-                params.append(place_end)
-            
-            if not updates:
+            for col, val in allowed_columns.items():
+                if val is not None:
+                    set_clauses.append(f"{col} = %s")
+                    params.append(val)
+            if not set_clauses:
                 return False
-            
             params.extend([pod_id, user_id])
-            sql = f"UPDATE Pod_Member SET {', '.join(updates)} WHERE pod_id = %s AND user_id = %s"
+            sql = "UPDATE Pod_Member SET " + ", ".join(set_clauses) + " WHERE pod_id = %s AND user_id = %s"
             cursor.execute(sql, params)
             self.db.commit()
             return cursor.rowcount > 0
