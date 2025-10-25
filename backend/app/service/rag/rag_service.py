@@ -93,7 +93,7 @@ class RagService:
                 "Content-Type": "application/json"
             }
             data = {
-                "model": "midm-m2-mini",
+                "model": settings.LLM_MODEL_NAME,
                 "messages": [{"role": "user", "content": prompt}],
                 "max_tokens": 300
             }
