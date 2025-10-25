@@ -36,6 +36,7 @@ class Settings(BaseSettings):
     LLM_PROVIDER: str = "API"  # or "DISABLED"
     LLM_API_KEY: Optional[str] = None
     LLM_API_URL: Optional[str] = None
+    LLM_MODEL_NAME: Optional[str] = None
 
     # Vector DB
     CHROMA_DB_PATH: str = "./chroma_db_data"

@@ -5,18 +5,20 @@ from sentence_transformers import SentenceTransformer
 import chromadb
 from app.core.config import settings
 from app.repository.rag.rag_query_repository import RagQueryRepository
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 logger = logging.getLogger(__name__)
 
 class RagService:
-    def __init__(self, rag_query_repo: RagQueryRepository):
+    def __init__(self, rag_query_repo: Optional[RagQueryRepository] = None):
         logger.info("🔄 Initializing RagService...")
         self.rag_query_repo = rag_query_repo
         
+        # ✅ Embedding 모델 - 싱글톤에서 한 번만 로딩
         self.embedding_model = SentenceTransformer(settings.EMBEDDING_MODEL_NAME)
         logger.info(f"✅ Embedding model loaded: {settings.EMBEDDING_MODEL_NAME}")
         
+        # ✅ ChromaDB 클라이언트 - 싱글톤에서 한 번만 초기화
         self.chroma_client = chromadb.PersistentClient(path=settings.CHROMA_DB_PATH)
         self.collection = self.chroma_client.get_or_create_collection(
             name="hots_pod_collection",
@@ -24,10 +26,23 @@ class RagService:
         )
         logger.info("✅ ChromaDB collection ready")
 
-    def search(self, query: str) -> List[Dict[str, Any]]:
+    def search(self, query: str, rag_query_repo: Optional[RagQueryRepository] = None) -> List[Dict[str, Any]]:
+        """
+        RAG 검색 (repository를 외부에서 주입 가능)
+        
+        Args:
+            query: 검색 쿼리
+            rag_query_repo: 외부에서 주입할 repository (None이면 내부 repository 사용)
+        """
         logger.info(f"🔍 RAG Search: '{query}'")
         
-        all_categories = self.rag_query_repo.get_all_categories()
+        # ✅ Repository 선택: 외부 주입 > 내부 repository
+        repo = rag_query_repo if rag_query_repo is not None else self.rag_query_repo
+        
+        if repo is None:
+            raise ValueError("RagQueryRepository is not available")
+        
+        all_categories = repo.get_all_categories()
         
         found_category_id = None
         for cat in all_categories:
@@ -55,7 +70,7 @@ class RagService:
         retrieved_pod_ids = [int(id_str) for id_str in results['ids'][0]]
         logger.info(f"🎯 Found {len(retrieved_pod_ids)} candidates")
 
-        final_pods = self.rag_query_repo.filter_pods(
+        final_pods = repo.filter_pods(
             pod_ids=retrieved_pod_ids,
             place_keyword=place_keyword,
             category_id=found_category_id
