@@ -4,6 +4,7 @@ from app.repository.comment.comment_query_repository import CommentQueryReposito
 from app.schemas.comment import CommentCreateRequest, CommentResponse, CommentWithReplies
 from typing import Optional, List
 
+#이거 클래스 수상함. 30퍼 CLI지분있는데, 이새기가 쓸때마다 코드를 갈아엎음.
 class CommentService:
     def __init__(self, command_repo: CommentCommandRepository, query_repo: CommentQueryRepository):
         self.command_repo = command_repo
@@ -23,11 +24,7 @@ class CommentService:
     def get_pod_comments(self, pod_id: int) -> List[CommentWithReplies]:
         """Pod의 댓글 계층 구조로 반환"""
         comments_data = self.query_repo.find_comments_by_pod(pod_id)
-        
-        # 댓글을 딕셔너리로 변환
         comments_dict = {c['comment_id']: CommentWithReplies(**c) for c in comments_data}
-        
-        # 계층 구조 생성
         root_comments = []
         for comment in comments_dict.values():
             if comment.parent_comment_id is None:

@@ -11,21 +11,16 @@ from app.core.config import settings
 
 router = APIRouter(prefix="/rag", tags=["RAG Search"])
 
-# ✅ Thread-Safe 싱글톤
 _rag_service_singleton = None
 _singleton_lock = Lock()
 
 def get_rag_service_singleton() -> RagService:
-    """
-    Thread-Safe RAG 서비스 싱글톤
-    - Embedding 모델과 ChromaDB는 한 번만 로딩
-    """
     global _rag_service_singleton
     
     if _rag_service_singleton is None:
         with _singleton_lock:
             if _rag_service_singleton is None:
-                _rag_service_singleton = RagService()  # ✅ 파라미터 없음
+                _rag_service_singleton = RagService()
     
     return _rag_service_singleton
 
@@ -35,7 +30,7 @@ async def search_pods_with_rag(
     db: Connection = Depends(get_db_connection)
 ):
     """
-    RAG 기반 하이브리드 검색
+    RAG구조입니다.. 룰루랄라
     
     1. 키워드 분석
     2. 벡터 유사도 검색
@@ -43,22 +38,18 @@ async def search_pods_with_rag(
     4. LLM 답변 생성
     """
     try:
-        # ✅ 싱글톤 서비스 가져오기
-        rag_service = get_rag_service_singleton()
-        
-        # ✅ 요청별로 독립적인 repository 생성 (Thread-Safe)
+        # 싱글톤
+        rag_service = get_rag_service_singleton()    
+        # 요청별로 독립적인 repository 생성 (Thread-Safe)
         rag_query_repo = RagQueryRepository(db)
-        
-        # ✅ Repository를 명시적으로 전달 (필수 파라미터)
+        # Repository를 명시적으로 전달 (필수 파라미터)
         retrieved_pods_data = rag_service.search(request.query, rag_query_repo)
-        llm_answer = rag_service.generate_answer(request.query, retrieved_pods_data)
-        
+        llm_answer = rag_service.generate_answer(request.query, retrieved_pods_data)      
         retrieved_pods = [PodResponse(**pod) for pod in retrieved_pods_data]
-        
         return RagSearchResponse(
             llm_answer=llm_answer,
             retrieved_pods=retrieved_pods,
-            total_found=len(retrieved_pods)
+            total_found=len(retrieved_pods) # 주석쓰기 귀찮네요..
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"RAG search failed: {str(e)}")

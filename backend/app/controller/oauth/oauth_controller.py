@@ -10,10 +10,9 @@ from app.core.config import settings
 from datetime import timedelta
 
 router = APIRouter(prefix='/oauth', tags=['OAuth'])
-
+# 어우씨 여기 하나도 모르겠다 ㅋㅋㅋ
 @router.get("/kakao/login")
 async def kakao_login():
-    """카카오 로그인 페이지로 리디렉션"""
     kakao_auth_url = (
         f"https://kauth.kakao.com/oauth/authorize"
         f"?client_id={settings.KAKAO_REST_API_KEY}"
@@ -28,31 +27,26 @@ async def kakao_callback(
     code: str = Query(..., description="카카오 인가 코드"),
     db: Connection = Depends(get_db_connection)
 ):
-    """
-    카카오 로그인 콜백
-    1. 토큰 발급
-    2. 사용자 정보 조회
-    3. 로그인/회원가입
-    4. JWT 발급
-    """
     try:
-        # Step 1: 카카오 액세스 토큰 발급
+        token_data = {
+            "grant_type": "authorization_code",
+            "client_id": settings.KAKAO_REST_API_KEY,
+            "redirect_uri": settings.KAKAO_REDIRECT_URI,
+            "code": code,
+        }
+        
+        if settings.KAKAO_CLIENT_SECRET:
+            token_data["client_secret"] = settings.KAKAO_CLIENT_SECRET
+        
         token_response = requests.post(
             "https://kauth.kakao.com/oauth/token",
             headers={"Content-Type": "application/x-www-form-urlencoded;charset=utf-8"},
-            data={
-                "grant_type": "authorization_code",
-                "client_id": settings.KAKAO_REST_API_KEY,
-                "redirect_uri": settings.KAKAO_REDIRECT_URI,
-                "code": code,
-            |   **({ "client_secret": settings.KAKAO_CLIENT_SECRET } if settings.KAKAO_CLIENT_SECRET else {})
-            },
+            data=token_data,
             timeout=10
         )
         token_response.raise_for_status()
         tokens = token_response.json()
         
-        # Step 2: 카카오 사용자 정보 조회
         profile_response = requests.get(
             "https://kapi.kakao.com/v2/user/me",
             headers={
@@ -64,11 +58,9 @@ async def kakao_callback(
         profile_response.raise_for_status()
         kakao_profile = profile_response.json()
         
-        # Step 3: 로그인/회원가입
         oauth_service = OAuthService(db)
         user_info = oauth_service.kakao_login_or_register(kakao_profile, tokens)
         
-        # Step 4: JWT 토큰 발급
         access_token = create_access_token(
             data={"user_id": user_info['user_id'], "username": user_info['username']},
             expires_delta=timedelta(minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -92,7 +84,6 @@ async def kakao_callback(
 
 @router.get("/logout")
 async def logout(access_token: str = Query(..., description="카카오 액세스 토큰")):
-    """카카오 로그아웃"""
     try:
         logout_response = requests.post(
             "https://kapi.kakao.com/v1/user/logout",

@@ -12,7 +12,7 @@ class ChatQueryRepository:
         limit: int = 100, 
         before_chat_id: int = None
     ) -> List[Dict[str, Any]]:
-        """Pod의 채팅 메시지 조회 (페이징)"""
+        """Pod 채팅조회"""
         with self.db.cursor() as cursor:
             if before_chat_id:
                 sql = """
@@ -36,4 +36,4 @@ class ChatQueryRepository:
                 cursor.execute(sql, (pod_id, limit))
             
             results = cursor.fetchall()
-            return list(reversed(results))  # 오래된 순으로 정렬
+            return list(reversed(results))

@@ -19,6 +19,6 @@ class ChatService:
         limit: int = 100, 
         before_chat_id: Optional[int] = None
     ) -> List[ChatMessageResponse]:
-        """Pod의 채팅 메시지 조회"""
+        """Pod 채팅조회"""
         messages_data = self.query_repo.find_messages_by_pod(pod_id, limit, before_chat_id)
         return [ChatMessageResponse(**msg) for msg in messages_data]

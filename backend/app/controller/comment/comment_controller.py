@@ -9,7 +9,7 @@ from app.schemas.comment import CommentCreateRequest, CommentResponse, CommentWi
 from typing import List
 
 router = APIRouter(prefix="/comments", tags=["Comments"])
-
+# 60% 코파일럿 생성, 검토필수임
 def get_comment_service(db: Connection = Depends(get_db_connection)) -> CommentService:
     command_repo = CommentCommandRepository(db)
     query_repo = CommentQueryRepository(db)

@@ -334,30 +334,19 @@ def execute_ddl(connection):
     for line in SQL_SCHEMA_V3.split('\n'):
         line = line.strip()
         
-        # ✅ 정규식으로 멀티라인 주석 제거 (/* ... */)
+        #대충 주석이랑 공백 지우는거임
         line = re.sub(r'/\*.*?\*/', '', line)
-        
-        # ✅ 싱글라인 주석 제거 (--)
         if '--' in line:
             line = line.split('--', 1)[0].rstrip()
-        
-        # 빈 줄 건너뛰기
         if not line:
             continue
-        
-        # DELIMITER 변경
         if line.startswith('DELIMITER'):
             delimiter = line.split()[-1]
             continue
-        
-        # SQL 문장 누적
         current_statement += line + " "
-        
-        # Delimiter 체크 및 statement 분리
         if delimiter == "$$":
             if current_statement.rstrip().endswith("$$"):
                 current_statement = current_statement.rstrip()
-                # ✅ removesuffix 사용 (안전)
                 if current_statement.endswith(delimiter):
                     current_statement = current_statement.removesuffix(delimiter).rstrip()
                 statements.append(current_statement.strip())
@@ -377,4 +366,4 @@ def execute_ddl(connection):
     
     connection.commit()
     cursor.close()
-    print("✅ DDL execution completed!")
+    print("DDL execution completed!")

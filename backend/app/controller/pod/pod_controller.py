@@ -20,9 +20,7 @@ async def create_pod(
     pod_data: PodCreateRequest,
     pod_service: PodService = Depends(get_pod_service)
 ):
-    """
-    Pod 생성 (트리거로 자동 RAG 큐 추가)
-    """
+   # Pod 생성 (트리거로 자동 RAG 큐 추가)
     try:
         pod_id = pod_service.create_pod(pod_data)
         return {"pod_id": pod_id, "message": "Pod created successfully"}

@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 rag_worker = None
 worker_thread = None
-shutdown_flag = False  # ✅ 추가
+shutdown_flag = False  # 추가
 
 def run_rag_worker_in_thread():
     """RAG Worker를 별도 스레드에서 실행"""
@@ -35,44 +35,44 @@ def run_rag_worker_in_thread():
     
     try:
         rag_worker = RagWorkerService()
-        logger.info("✅ RAG Worker Service initialized")
+        logger.info("RAG Worker Service initialized")
         loop.run_until_complete(rag_worker.run_worker())
     except asyncio.CancelledError:
-        logger.info("🛑 RAG worker cancelled")
+        logger.info("RAG worker cancelled")
     except Exception as e:
-        logger.error(f"❌ RAG worker error: {e}", exc_info=True)
+        logger.error(f"RAG worker error: {e}", exc_info=True)
     finally:
         try:
             loop.close()
-            logger.info("🔒 RAG worker event loop closed")
+            logger.info("RAG worker event loop closed")
         except Exception as e:
-            logger.error(f"❌ Error closing event loop: {e}")
+            logger.error(f"Error closing event loop: {e}")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """애플리케이션 생명주기 관리"""
     global worker_thread, shutdown_flag
-    logger.info("🚀 Application starting up...")
+    logger.info("Application starting up...")
     
-    # ✅ RAG Worker 시작
+    # RAG Worker 시작
     shutdown_flag = False
     worker_thread = threading.Thread(target=run_rag_worker_in_thread, daemon=True)
     worker_thread.start()
-    logger.info("✅ RAG worker thread started")
+    logger.info("RAG worker thread started")
     
     yield
     
-    # ✅ Graceful Shutdown
-    logger.info("🛑 Application shutting down...")
+    # Graceful Shutdown
+    logger.info("Application shutting down...")
     shutdown_flag = True
     
     # Worker 종료 대기 (최대 5초)
     if worker_thread and worker_thread.is_alive():
         worker_thread.join(timeout=5)
         if worker_thread.is_alive():
-            logger.warning("⚠️ RAG worker did not stop in time")
+            logger.warning("RAG worker did not stop in time")
         else:
-            logger.info("✅ RAG worker stopped gracefully")
+            logger.info("RAG worker stopped gracefully")
 
 app = FastAPI(
     title="Hot's POD API",
@@ -89,7 +89,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ✅ 모든 라우터 등록
+# 모든 라우터 등록
 app.include_router(user_controller.router)
 app.include_router(pod_controller.router)
 app.include_router(oauth_controller.router)
