@@ -6,6 +6,7 @@ from app.repository.rag.rag_query_repository import RagQueryRepository
 from app.service.rag.rag_service import RagService
 from app.schemas.rag import RagSearchRequest, RagSearchResponse
 from app.schemas.pod import PodResponse
+from app.core.config import settings
 
 router = APIRouter(prefix="/rag", tags=["RAG Search"])
 
