@@ -257,10 +257,10 @@ BEGIN
     FROM `Pod` p
     JOIN `User` u ON p.`host_user_id` = u.`user_id`
     WHERE p.`pod_id` IN (
-        SELECT CAST(`id` AS UNSIGNED) 
+        SELECT CAST(`pod_id_str` AS UNSIGNED) 
         FROM JSON_TABLE(
             `in_pod_ids_json`,
-            "$[*]" COLUMNS (`id` VARCHAR(20) PATH "$")
+            "$[*]" COLUMNS (`pod_id_str` VARCHAR(20) PATH "$")
         ) AS `jt`
     )
     AND (`in_place_keyword` IS NULL OR p.`place` LIKE CONCAT('%', `in_place_keyword`, '%'))
