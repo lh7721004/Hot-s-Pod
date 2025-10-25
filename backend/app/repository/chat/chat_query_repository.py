@@ -1,0 +1,39 @@
+# app/repository/chat/chat_query_repository.py
+from pymysql.connections import Connection
+from typing import List, Dict, Any
+
+class ChatQueryRepository:
+    def __init__(self, db: Connection):
+        self.db = db
+    
+    def find_messages_by_pod(
+        self, 
+        pod_id: int, 
+        limit: int = 100, 
+        before_chat_id: int = None
+    ) -> List[Dict[str, Any]]:
+        """Pod의 채팅 메시지 조회 (페이징)"""
+        with self.db.cursor() as cursor:
+            if before_chat_id:
+                sql = """
+                    SELECT c.*, u.username
+                    FROM Chat c
+                    JOIN User u ON c.user_id = u.user_id
+                    WHERE c.pod_id = %s AND c.chat_id < %s
+                    ORDER BY c.time DESC
+                    LIMIT %s
+                """
+                cursor.execute(sql, (pod_id, before_chat_id, limit))
+            else:
+                sql = """
+                    SELECT c.*, u.username
+                    FROM Chat c
+                    JOIN User u ON c.user_id = u.user_id
+                    WHERE c.pod_id = %s
+                    ORDER BY c.time DESC
+                    LIMIT %s
+                """
+                cursor.execute(sql, (pod_id, limit))
+            
+            results = cursor.fetchall()
+            return list(reversed(results))  # 오래된 순으로 정렬
