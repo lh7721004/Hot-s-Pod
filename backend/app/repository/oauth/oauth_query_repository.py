@@ -1,29 +1,26 @@
-# app/repository/oauth/oauth_command_repository.py
-from pymysql.connections import Connection
+# repository/oauth/oauth_query_repository.py
+from pymysql import Connection
+from typing import Optional, Dict, Any
 
-class OAuthCommandRepository:
+class OAuthQueryRepository:
     def __init__(self, db: Connection):
         self.db = db
     
-    def upsert_kakao_user(
-        self, 
-        k_id: int, 
-        user_id: int, 
-        access_token: str, 
-        refresh_token: str,
-        user_name: str,
-        profile_picture: str
-    ) -> None:
+    def find_user_by_kakao_id(self, k_id: int) -> Optional[Dict[str, Any]]:
+        """카카오 ID로 사용자 조회"""
         with self.db.cursor() as cursor:
             sql = """
-                INSERT INTO KakaoAPI 
-                    (k_id, user_id, access_token, refresh_token, user_name, profile_picture)
-                VALUES (%s, %s, %s, %s, %s, %s)
-                ON DUPLICATE KEY UPDATE
-                    access_token = VALUES(access_token),
-                    refresh_token = VALUES(refresh_token),
-                    user_name = VALUES(user_name),
-                    profile_picture = VALUES(profile_picture)
+                SELECT 
+                    u.user_id, 
+                    u.username, 
+                    u.phonenumber,
+                    u.created_at,
+                    k.k_id,
+                    k.user_name,
+                    k.profile_picture
+                FROM User u
+                JOIN KakaoAPI k ON u.user_id = k.user_id
+                WHERE k.k_id = %s
             """
-            cursor.execute(sql, (k_id, user_id, access_token, refresh_token, user_name, profile_picture))
-            self.db.commit()
+            cursor.execute(sql, (k_id,))
+            return cursor.fetchone()
