@@ -45,8 +45,13 @@ class PodMemberCommandRepository:
             allowed_column_names = ("amount", "place_start", "place_end")
             set_clauses = []
             params = []
+            values = {
+                "amount": amount,
+                "place_start": place_start,
+                "place_end": place_end
+            }
             for col in allowed_column_names:
-                val = locals()[col]
+                val = values[col]
                 if val is not None:
                     set_clauses.append(f"{col} = %s")
                     params.append(val)
