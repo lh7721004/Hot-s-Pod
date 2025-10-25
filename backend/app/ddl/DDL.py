@@ -329,14 +329,29 @@ def execute_ddl(connection):
     current_statement = ""
     delimiter = ";"
     
+    in_multiline_comment = False
     for line in SQL_SCHEMA_V3.split('\n'):
         line = line.strip()
+        
+        # Handle start and end of multi-line comments
+        if not in_multiline_comment:
+            if line.startswith('/*'):
+                in_multiline_comment = True
+                # Check if comment ends on the same line
+                if '*/' in line:
+                    in_multiline_comment = False
+                continue
+        else:
+            # Inside multi-line comment, check for end
+            if '*/' in line:
+                in_multiline_comment = False
+            continue
         
         if line.startswith('DELIMITER'):
             delimiter = line.split()[-1]
             continue
         
-        if line and not line.startswith('/*') and not line.startswith('--'):
+        if line and not line.startswith('--'):
             current_statement += line + " "
             
             if delimiter in line and delimiter == "$$" and current_statement.rstrip().endswith("$$"):
