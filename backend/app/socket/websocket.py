@@ -53,48 +53,50 @@ manager = ConnectionManager()
 
 @router.websocket("/chat/{pod_id}")
 async def websocket_chat_endpoint(websocket: WebSocket, pod_id: str):
-    """
-    실시간 채팅 WebSocket + DB 저장
-    """
     await manager.connect(websocket, pod_id)
     
     # DB 연결
     db = DatabaseConnectionPool.get_pool().connection()
-    chat_repo = ChatCommandRepository(db)
     
     try:
-        while True:
-            data = await websocket.receive_text()
-            
-            try:
-                message = json.loads(data)
-                message['pod_id'] = pod_id
-                
-                # ✅ DB에 저장
-                try:
-                    chat_message = ChatMessageCreate(
-                        pod_id=int(pod_id),
-                        user_id=message['user_id'],
-                        content=message['content']
-                    )
-                    chat_id = chat_repo.create_message(chat_message)
-                    message['chat_id'] = chat_id
-                    logger.info(f"💾 Message saved: chat_id={chat_id}")
-                except Exception as e:
-                    logger.error(f"Failed to save message: {e}")
-                
-                # 다른 클라이언트들에게 브로드캐스트
-                await manager.broadcast(message, pod_id, exclude=websocket)
-                
-            except json.JSONDecodeError:
-                await websocket.send_json({"error": "Invalid JSON format"})
-    
-    except WebSocketDisconnect:
-        manager.disconnect(websocket, pod_id)
-        db.close()
+        chat_repo = ChatCommandRepository(db)
         
-        await manager.broadcast({
-            "type": "system",
-            "content": "A user has left the chat",
-            "pod_id": pod_id
-        }, pod_id)
+        try:
+            while True:
+                data = await websocket.receive_text()
+                
+                try:
+                    message = json.loads(data)
+                    message['pod_id'] = pod_id
+                    
+                    # DB에 저장
+                    try:
+                        chat_message = ChatMessageCreate(
+                            pod_id=int(pod_id),
+                            user_id=message['user_id'],
+                            content=message['content']
+                        )
+                        chat_id = chat_repo.create_message(chat_message)
+                        message['chat_id'] = chat_id
+                        logger.info(f"💾 Message saved: chat_id={chat_id}")
+                    except Exception as e:
+                        logger.error(f"Failed to save message: {e}")
+                    
+                    # 다른 클라이언트들에게 브로드캐스트
+                    await manager.broadcast(message, pod_id, exclude=websocket)
+                    
+                except json.JSONDecodeError:
+                    await websocket.send_json({"error": "Invalid JSON format"})
+        
+        except WebSocketDisconnect:
+            manager.disconnect(websocket, pod_id)
+            
+            await manager.broadcast({
+                "type": "system",
+                "content": "A user has left the chat",
+                "pod_id": pod_id
+            }, pod_id)
+    
+    finally:
+        db.close()
+        logger.info(f"🔒 DB connection closed for pod {pod_id}")
