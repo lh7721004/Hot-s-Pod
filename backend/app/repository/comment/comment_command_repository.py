@@ -1,25 +1,31 @@
-# app/schemas/comment.py
-from pydantic import BaseModel, Field
-from datetime import datetime
-from typing import Optional, List
+# app/repository/comment/comment_command_repository.py
+from pymysql.connections import Connection
+from app.schemas.comment import CommentCreateRequest
 
-class CommentCreateRequest(BaseModel):
-    pod_id: int
-    user_id: int
-    content: str = Field(..., min_length=1)
-    parent_comment_id: Optional[int] = None
-
-class CommentResponse(BaseModel):
-    comment_id: int
-    pod_id: int
-    user_id: int
-    content: str
-    parent_comment_id: Optional[int]
-    created_at: datetime
-    username: Optional[str] = None
-
-    class Config:
-        from_attributes = True
-
-class CommentWithReplies(CommentResponse):
-    replies: List['CommentWithReplies'] = []
+class CommentCommandRepository:
+    def __init__(self, db: Connection):
+        self.db = db
+    
+    def create_comment(self, comment_data: CommentCreateRequest) -> int:
+        """댓글 생성"""
+        with self.db.cursor() as cursor:
+            sql = """
+                INSERT INTO Comment (pod_id, user_id, content, parent_comment_id)
+                VALUES (%s, %s, %s, %s)
+            """
+            cursor.execute(sql, (
+                comment_data.pod_id,
+                comment_data.user_id,
+                comment_data.content,
+                comment_data.parent_comment_id
+            ))
+            self.db.commit()
+            return cursor.lastrowid
+    
+    def delete_comment(self, comment_id: int) -> bool:
+        """댓글 삭제"""
+        with self.db.cursor() as cursor:
+            sql = "DELETE FROM Comment WHERE comment_id = %s"
+            cursor.execute(sql, (comment_id,))
+            self.db.commit()
+            return cursor.rowcount > 0
