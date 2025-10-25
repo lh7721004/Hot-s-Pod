@@ -1,3 +1,4 @@
+# backend/main.py
 import threading
 import asyncio
 from contextlib import asynccontextmanager
@@ -24,34 +25,54 @@ logger = logging.getLogger(__name__)
 
 rag_worker = None
 worker_thread = None
+shutdown_flag = False  # ✅ 추가
 
 def run_rag_worker_in_thread():
-    global rag_worker
+    """RAG Worker를 별도 스레드에서 실행"""
+    global rag_worker, shutdown_flag
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     
     try:
         rag_worker = RagWorkerService()
+        logger.info("✅ RAG Worker Service initialized")
         loop.run_until_complete(rag_worker.run_worker())
     except asyncio.CancelledError:
         logger.info("🛑 RAG worker cancelled")
     except Exception as e:
         logger.error(f"❌ RAG worker error: {e}", exc_info=True)
     finally:
-        loop.close()
+        try:
+            loop.close()
+            logger.info("🔒 RAG worker event loop closed")
+        except Exception as e:
+            logger.error(f"❌ Error closing event loop: {e}")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global worker_thread
+    """애플리케이션 생명주기 관리"""
+    global worker_thread, shutdown_flag
     logger.info("🚀 Application starting up...")
     
+    # ✅ RAG Worker 시작
+    shutdown_flag = False
     worker_thread = threading.Thread(target=run_rag_worker_in_thread, daemon=True)
     worker_thread.start()
     logger.info("✅ RAG worker thread started")
     
     yield
     
+    # ✅ Graceful Shutdown
     logger.info("🛑 Application shutting down...")
+    shutdown_flag = True
+    
+    # Worker 종료 대기 (최대 5초)
+    if worker_thread and worker_thread.is_alive():
+        worker_thread.join(timeout=5)
+        if worker_thread.is_alive():
+            logger.warning("⚠️ RAG worker did not stop in time")
+        else:
+            logger.info("✅ RAG worker stopped gracefully")
 
 app = FastAPI(
     title="Hot's POD API",

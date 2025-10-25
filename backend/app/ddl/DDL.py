@@ -323,46 +323,49 @@ INSERT INTO `CategoryLink` (`pod_id`, `category_id`) VALUES
 
 def execute_ddl(connection):
     """DDL 스크립트를 실행합니다."""
+    import re
+    
     cursor = connection.cursor()
     
     statements = []
     current_statement = ""
     delimiter = ";"
     
-    in_multiline_comment = False
     for line in SQL_SCHEMA_V3.split('\n'):
         line = line.strip()
         
-        # Handle start and end of multi-line comments
-        if not in_multiline_comment:
-            if line.startswith('/*'):
-                in_multiline_comment = True
-                # Check if comment ends on the same line
-                if '*/' in line:
-                    in_multiline_comment = False
-                continue
-        else:
-            # Inside multi-line comment, check for end
-            if '*/' in line:
-                in_multiline_comment = False
+        # ✅ 정규식으로 멀티라인 주석 제거 (/* ... */)
+        line = re.sub(r'/\*.*?\*/', '', line)
+        
+        # ✅ 싱글라인 주석 제거 (--)
+        if '--' in line:
+            line = line.split('--', 1)[0].rstrip()
+        
+        # 빈 줄 건너뛰기
+        if not line:
             continue
         
+        # DELIMITER 변경
         if line.startswith('DELIMITER'):
             delimiter = line.split()[-1]
             continue
         
-        if line and not line.startswith('--'):
-            current_statement += line + " "
-            
-            if delimiter in line and delimiter == "$$" and current_statement.rstrip().endswith("$$"):
+        # SQL 문장 누적
+        current_statement += line + " "
+        
+        # Delimiter 체크 및 statement 분리
+        if delimiter == "$$":
+            if current_statement.rstrip().endswith("$$"):
                 current_statement = current_statement.rstrip()
-                current_statement = current_statement[:-2].rstrip()
+                # ✅ removesuffix 사용 (안전)
+                current_statement = current_statement.removesuffix(delimiter).rstrip()
                 statements.append(current_statement.strip())
                 current_statement = ""
-            elif delimiter in line:
-                statements.append(current_statement.strip())
-                current_statement = ""
+        elif delimiter in line:
+            statements.append(current_statement.strip())
+            current_statement = ""
     
+    # 실행
     for statement in statements:
         if statement:
             try:
