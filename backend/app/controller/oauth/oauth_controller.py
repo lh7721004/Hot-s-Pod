@@ -45,7 +45,7 @@ async def kakao_callback(
                 "client_id": settings.KAKAO_REST_API_KEY,
                 "redirect_uri": settings.KAKAO_REDIRECT_URI,
                 "code": code,
-                "client_secret": settings.KAKAO_CLIENT_SECRET
+            |   **({ "client_secret": settings.KAKAO_CLIENT_SECRET } if settings.KAKAO_CLIENT_SECRET else {})
             },
             timeout=10
         )
