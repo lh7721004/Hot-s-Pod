@@ -20,22 +20,19 @@ def main():
         return
     
     try:
-        # DB 연결 (DB 이름 명시)
         connection = pymysql.connect(
             host=os.getenv("DATABASE_HOST", "127.0.0.1"),
             port=int(os.getenv("DATABASE_PORT", 3306)),
             user=os.getenv("DATABASE_USER", "root"),
             password=os.getenv("DATABASE_PASSWORD", ""),
-            db=os.getenv("DATABASE_NAME", "hots_pod_db"),  # DB 명시
+            database=os.getenv("DATABASE_NAME", "hots_pod_db"),
             charset='utf8mb4',
             cursorclass=pymysql.cursors.DictCursor
         )
         
         print("Database connection established")
         
-        # DDL 실행
         execute_ddl(connection)
-        
         connection.close()
         print("Database initialization completed!")
         

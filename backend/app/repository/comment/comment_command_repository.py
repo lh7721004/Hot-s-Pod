@@ -7,7 +7,7 @@ class CommentCommandRepository:
         self.db = db
     
     def create_comment(self, comment_data: CommentCreateRequest) -> int:
-        """댓글 생성"""
+        #댓글
         with self.db.cursor() as cursor:
             sql = """
                 INSERT INTO Comment (pod_id, user_id, content, parent_comment_id)

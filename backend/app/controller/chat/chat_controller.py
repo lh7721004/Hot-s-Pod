@@ -9,7 +9,7 @@ from app.schemas.chat import ChatMessageCreate, ChatMessageResponse
 from typing import List, Optional
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
-
+#공식문서 보니까 생각보다 할만해서 그냥 짬, 검토는 필요함
 def get_chat_service(db: Connection = Depends(get_db_connection)) -> ChatService:
     command_repo = ChatCommandRepository(db)
     query_repo = ChatQueryRepository(db)

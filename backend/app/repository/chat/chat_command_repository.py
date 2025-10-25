@@ -7,7 +7,7 @@ class ChatCommandRepository:
         self.db = db
     
     def create_message(self, message_data: ChatMessageCreate) -> int:
-        """채팅 메시지 저장"""
+        """채팅 저장"""
         with self.db.cursor() as cursor:
             sql = """
                 INSERT INTO Chat (pod_id, user_id, content)

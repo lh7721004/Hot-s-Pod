@@ -19,7 +19,7 @@ class CommentQueryRepository:
             return cursor.fetchone()
     
     def find_comments_by_pod(self, pod_id: int) -> List[Dict[str, Any]]:
-        """특정 Pod의 모든 댓글 조회 (계층 구조)"""
+        """특정 Pod의 모든 댓글 조회"""
         with self.db.cursor() as cursor:
             sql = """
                 SELECT c.*, u.username

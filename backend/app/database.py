@@ -7,7 +7,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 class DatabaseConnectionPool:
-    """DBUtils 기반 커넥션 풀 (싱글톤)"""
     _pool = None
 
     @classmethod
@@ -33,14 +32,13 @@ class DatabaseConnectionPool:
                     cursorclass=pymysql.cursors.DictCursor,
                     autocommit=False
                 )
-                logger.info("✅ Database connection pool created")
+                logger.info("Database connection pool created")
             except Exception as e:
-                logger.error(f"❌ Failed to create connection pool: {e}")
+                logger.error(f"Failed to create connection pool: {e}")
                 raise
         return cls._pool
 
 def get_db_connection():
-    """FastAPI Depends용 커넥션 제공자"""
     pool = DatabaseConnectionPool.get_pool()
     connection = None
     try:

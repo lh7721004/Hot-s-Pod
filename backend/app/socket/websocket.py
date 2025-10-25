@@ -10,6 +10,7 @@ from app.schemas.chat import ChatMessageCreate
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/ws", tags=["WebSocket"])
 
+#사실 여기가 젤 어질어질했음.. 이건 천천히 공부하죠
 class ConnectionManager:
     def __init__(self):
         self.active_connections: Dict[str, List[WebSocket]] = {}
@@ -21,13 +22,13 @@ class ConnectionManager:
             self.active_connections[pod_id] = []
         
         self.active_connections[pod_id].append(websocket)
-        logger.info(f"✅ Client connected to pod {pod_id}")
+        logger.info(f"Client connected to pod {pod_id}")
     
     def disconnect(self, websocket: WebSocket, pod_id: str):
         if pod_id in self.active_connections:
             try:
                 self.active_connections[pod_id].remove(websocket)
-                logger.info(f"❌ Client disconnected from pod {pod_id}")
+                logger.info(f"Client disconnected from pod {pod_id}")
                 
                 if not self.active_connections[pod_id]:
                     del self.active_connections[pod_id]
@@ -55,7 +56,7 @@ manager = ConnectionManager()
 async def websocket_chat_endpoint(websocket: WebSocket, pod_id: str):
     await manager.connect(websocket, pod_id)
     
-    db = None  # ✅ None 초기화
+    db = None  # None 초기화
     try:
         db = DatabaseConnectionPool.get_pool().connection()
         chat_repo = ChatCommandRepository(db)
@@ -77,7 +78,7 @@ async def websocket_chat_endpoint(websocket: WebSocket, pod_id: str):
                         )
                         chat_id = chat_repo.create_message(chat_message)
                         message['chat_id'] = chat_id
-                        logger.info(f"💾 Message saved: chat_id={chat_id}")
+                        logger.info(f"Message saved: chat_id={chat_id}")
                     except Exception as e:
                         logger.error(f"Failed to save message: {e}")
                     
@@ -97,6 +98,6 @@ async def websocket_chat_endpoint(websocket: WebSocket, pod_id: str):
             }, pod_id)
     
     finally:
-        if db is not None:  # ✅ None 체크
+        if db is not None:  # None 체크
             db.close()
-            logger.info(f"🔒 DB connection closed for pod {pod_id}")
+            logger.info(f"DB connection closed for pod {pod_id}")

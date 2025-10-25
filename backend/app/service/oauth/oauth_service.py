@@ -5,6 +5,8 @@ from app.repository.oauth.oauth_query_repository import OAuthQueryRepository
 from app.repository.user.user_command_repository import UserCommandRepository
 from typing import Dict, Any
 
+#선생님 잘부탁합니다.. 읽어는 보겠는데요.. 써본적이 없어서 이게 맞는지 모르겠어요. 
+#만약 이게 틀렸다면 다른 oauth도 개판일겁니다
 class OAuthService:
     def __init__(self, db: Connection):
         self.db = db

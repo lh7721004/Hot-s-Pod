@@ -4,12 +4,8 @@ from typing import Optional, List
 from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
 
-# .env 파일 자동 로드 (로컬 개발용)
 load_dotenv()
-
 class Settings(BaseSettings):
-    """애플리케이션 전역 설정 (환경변수 기반)"""
-
     # App
     APP_NAME: str = "Hot's POD"
     APP_VERSION: str = "3.0.0"
@@ -33,21 +29,36 @@ class Settings(BaseSettings):
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     # LLM / RAG
-    LLM_PROVIDER: str = "API"  # or "DISABLED"
+    LLM_PROVIDER: str = "DISABLED"
+    
+    # API 모드 설정
     LLM_API_KEY: Optional[str] = None
     LLM_API_URL: Optional[str] = None
     LLM_MODEL_NAME: Optional[str] = None
-
-    # Vector DB
-    CHROMA_DB_PATH: str = "./chroma_db_data"
-    EMBEDDING_MODEL_NAME: str = "jhgan/ko-srobert-multitask"
+    
+    # LOCAL 모드 설정
     LOCAL_LLM_MODEL_NAME: Optional[str] = None
+    LOCAL_LLM_DEVICE: str = "auto"
+    LOCAL_LLM_LOAD_IN_8BIT: bool = True
 
-    # ✅ 장소 키워드 설정 추가
+    # Vector DB & Embedding
+    CHROMA_DB_PATH: str = "./chroma_db_data"
+    EMBEDDING_MODEL_NAME: Optional[str] = None
+
+    # 경주시 주요 지역 키워드
     PLACE_KEYWORDS: List[str] = [
-        '강남', '홍대', '신촌', '성수', '이태원', '건대',
-        '잠실', '여의도', '광화문', '종로', '명동', '용산'
+        '황성동', '석장동', '성건동', '용강동', '월성동',
+        '교동', '구황동', '남산동', '도지동', '동방동',
+        '배반동', '보문동',
+        '경주역', '경주시외버스터미널', '경주고속버스터미널',
+        '보문관광단지', '보문단지', '불국사', '석굴암',
+        '첨성대', '대릉원', '안압지', '동궁과월지',
+        '황리단길', '경주월드', '경주타워',
+        '동국대', '동국대학교', '서라벌대', '위덕대',
+        '감포읍', '안강읍', '건천읍', '외동읍',
+        '양북면', '양남면', '내남면', '산내면'
     ]
+    
     # Optional services
     REDIS_ENABLED: bool = False
     REDIS_HOST: Optional[str] = None
@@ -57,13 +68,11 @@ class Settings(BaseSettings):
     FEATURE_RAG_ENABLED: bool = True
     FEATURE_RATE_LIMITING: bool = False
 
-    # CORS (comma-separated or JSON array in env)
+    # CORS
     CORS_ORIGINS: Optional[str] = None
 
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
-        # case sensitive mapping on some OS if needed
-        # allow_mutation = False
 
 settings = Settings()
