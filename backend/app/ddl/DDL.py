@@ -162,7 +162,15 @@ CREATE TRIGGER `trg_pod_after_update`
 AFTER UPDATE ON `Pod`
 FOR EACH ROW
 BEGIN
-    IF OLD.`title` != NEW.`title` OR OLD.`content` != NEW.`content` OR OLD.`place` != NEW.`place` THEN
+    IF (OLD.`title` IS NULL AND NEW.`title` IS NOT NULL) OR 
+   (OLD.`title` IS NOT NULL AND NEW.`title` IS NULL) OR 
+   (OLD.`title` != NEW.`title`) OR
+   (OLD.`content` IS NULL AND NEW.`content` IS NOT NULL) OR 
+   (OLD.`content` IS NOT NULL AND NEW.`content` IS NULL) OR 
+   (OLD.`content` != NEW.`content`) OR
+   (OLD.`place` IS NULL AND NEW.`place` IS NOT NULL) OR 
+   (OLD.`place` IS NOT NULL AND NEW.`place` IS NULL) OR 
+   (OLD.`place` != NEW.`place`) THEN
         INSERT INTO `VectorSyncQueue` (`pod_id`, `action_type`, `status`, `created_at`)
         VALUES (NEW.`pod_id`, 'upsert', 'pending', CURRENT_TIMESTAMP);
     END IF;
