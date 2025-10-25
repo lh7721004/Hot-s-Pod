@@ -358,7 +358,8 @@ def execute_ddl(connection):
             if current_statement.rstrip().endswith("$$"):
                 current_statement = current_statement.rstrip()
                 # ✅ removesuffix 사용 (안전)
-                current_statement = current_statement.removesuffix(delimiter).rstrip()
+                if current_statement.endswith(delimiter):
+                    current_statement = current_statement[:-len(delimiter)].rstrip()
                 statements.append(current_statement.strip())
                 current_statement = ""
         elif delimiter in line:
