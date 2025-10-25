@@ -53,7 +53,7 @@ class PodMemberCommandRepository:
             for col in allowed_column_names:
                 val = values[col]
                 if val is not None:
-                    set_clauses.append(f"{col} = %s")
+                    set_clauses.append(col + " = %s")
                     params.append(val)
             if not set_clauses:
                 return False
