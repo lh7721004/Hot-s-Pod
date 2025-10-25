@@ -2,6 +2,7 @@
 from pydantic import BaseModel, Field
 from typing import List
 from app.schemas.pod import PodResponse
+from typing import Optional
 
 class RagSearchRequest(BaseModel):
     query: str = Field(..., min_length=1, max_length=500)

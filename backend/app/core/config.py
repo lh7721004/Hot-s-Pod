@@ -43,6 +43,11 @@ class Settings(BaseSettings):
     EMBEDDING_MODEL_NAME: str = "jhgan/ko-srobert-multitask"
     LOCAL_LLM_MODEL_NAME: Optional[str] = None
 
+    # ✅ 장소 키워드 설정 추가
+    PLACE_KEYWORDS: List[str] = [
+        '강남', '홍대', '신촌', '성수', '이태원', '건대',
+        '잠실', '여의도', '광화문', '종로', '명동', '용산'
+    ]
     # Optional services
     REDIS_ENABLED: bool = False
     REDIS_HOST: Optional[str] = None

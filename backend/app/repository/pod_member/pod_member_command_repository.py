@@ -1,6 +1,7 @@
 # app/repository/pod_member/pod_member_command_repository.py
 from pymysql.connections import Connection
 from app.schemas.pod_member import PodMemberJoinRequest
+from typing import Optional
 
 class PodMemberCommandRepository:
     def __init__(self, db: Connection):

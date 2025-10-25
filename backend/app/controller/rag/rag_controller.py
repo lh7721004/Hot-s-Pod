@@ -1,6 +1,7 @@
 # app/controller/rag/rag_controller.py
 from fastapi import APIRouter, Depends, HTTPException
 from pymysql.connections import Connection
+from threading import Lock
 from app.database import get_db_connection
 from app.repository.rag.rag_query_repository import RagQueryRepository
 from app.service.rag.rag_service import RagService
@@ -12,6 +13,7 @@ router = APIRouter(prefix="/rag", tags=["RAG Search"])
 
 # ✅ 전역 싱글톤 - Embedding 모델과 ChromaDB는 한 번만 초기화
 _rag_service_singleton = None
+_singleton_lock = Lock()
 
 def get_rag_service_singleton() -> RagService:
     """
@@ -22,8 +24,10 @@ def get_rag_service_singleton() -> RagService:
     """
     global _rag_service_singleton
     if _rag_service_singleton is None:
-        # Repository 없이 초기화 (나중에 주입)
-        _rag_service_singleton = RagService(rag_query_repo=None)
+        with _singleton_lock:
+            if _rag_service_singleton is None:
+                _rag_service_singleton = RagService(rag_query_repo=None)
+    
     return _rag_service_singleton
 
 @router.post("/search", response_model=RagSearchResponse)

@@ -54,11 +54,9 @@ manager = ConnectionManager()
 @router.websocket("/chat/{pod_id}")
 async def websocket_chat_endpoint(websocket: WebSocket, pod_id: str):
     await manager.connect(websocket, pod_id)
-    
-    # DB 연결
-    db = DatabaseConnectionPool.get_pool().connection()
-    
+      
     try:
+        db = DatabaseConnectionPool.get_pool().connection()
         chat_repo = ChatCommandRepository(db)
         
         try:

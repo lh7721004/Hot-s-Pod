@@ -51,8 +51,7 @@ class RagService:
                 break
         
         place_keyword = None
-        place_keywords = ['강남', '홍대', '신촌', '성수', '이태원', '건대']
-        for keyword in place_keywords:
+        for keyword in settings.PLACE_KEYWORDS:
             if keyword in query:
                 place_keyword = keyword
                 break
