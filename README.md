@@ -1,5 +1,5 @@
 # Hot's POD - AI 기반 오프라인 소모임 플랫폼
-
+ 
 <div align="center">
 
 ![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)
