@@ -31,7 +31,7 @@ class LLMModel:
         
         self.llm = AutoModelForCausalLM.from_pretrained(
             self.model_name,
-            **load_kwargs
+            **load_kwargs #딕셔너리 다 풀어서 전달하기, 직접전달해도되긴함
         )
         
         try:
@@ -79,3 +79,16 @@ def get_llm_instance():
     if llm_instance is None:
         llm_instance = LLMModel()
     return llm_instance
+
+"""
+from transformers import BitsAndBytesConfig
+if settings.LOCAL_LLM_LOAD_IN_QUNT: # 아직정의안됨, 양자화 4비트로 내릴거면 고민해볼것.
+                logger.info("4-bit quantization")
+                bnb_config = BitsAndBytesConfig(
+                    load_in_4bit=True,
+                    bnb_4bit_quant_type="nf4",
+                    bnb_4bit_compute_dtype=torch.bfloat16,
+                    bnb_4bit_use_double_quant=True
+                )
+                load_kwargs["quantization_config"] = bnb_config
+    """
