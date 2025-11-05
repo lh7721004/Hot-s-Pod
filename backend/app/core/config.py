@@ -30,7 +30,8 @@ class Settings(BaseSettings):
 
     # LLM / RAG
     LLM_PROVIDER: str = "DISABLED"
-    
+    #API / LOCAL /DISABLED
+
     # API 모드 설정
     LLM_API_KEY: Optional[str] = None
     LLM_API_URL: Optional[str] = None
