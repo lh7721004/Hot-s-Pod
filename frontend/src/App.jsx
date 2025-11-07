@@ -1,13 +1,15 @@
-import { useState } from 'react'
+import SideBarLayout from "./components/common/layout/sidebar";
+import HeaderLayout from "./components/common/layout/header";
+import { Routes, Route } from "react-router-dom";
+import Home from "../pages/main/index.jsx";
 
-function App() {
-  const [count, setCount] = useState(0)
-
+export default function App() {
   return (
-    <>
-      main page
-    </>
-  )
+    <div className="flex min-h-screen">
+    {/* <div className="flex min-h-screen bg-gradient-to-b from-[#4A96EC] via-[#4A96EC] to-[#237BE6]"> */}
+      <Routes>
+        <Route path="/" element={<Home />} />
+      </Routes>
+    </div>
+  );
 }
-
-export default App
