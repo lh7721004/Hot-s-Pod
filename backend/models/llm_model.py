@@ -5,6 +5,12 @@ from app.core.config import settings
 class LLMModel:
     def __init__(self):
         self.model_name = settings.LOCAL_LLM_MODEL_NAME
+        print(f" CUDA available: {torch.cuda.is_available()}")
+        if torch.cuda.is_available():
+            print(f" Using GPU: {torch.cuda.get_device_name(0)}")
+        else:
+            print("  Using CPU - LLM will be VERY slow!")
+        
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         self.llm = AutoModelForCausalLM.from_pretrained(
             self.model_name,
