@@ -23,7 +23,7 @@ export default function ConditionPicker(props) {
         return (
             <Input
                 value={value}
-                onChange={onChange}
+                onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
                 style={{width: 130, fontSize: "14px"}}
             />
@@ -96,10 +96,10 @@ export default function ConditionPicker(props) {
         return (
             <Select
                 id={id}
-                defaultValue={value}
+                value={value}
                 onChange={onChange}
                 style={{width: 130, fontSize: "14px"}}
-                options={options.map((option) => ({ label: option, value: option }))}
+                options={options}
             />
         );
     }

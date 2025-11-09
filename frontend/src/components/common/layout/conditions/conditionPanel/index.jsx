@@ -1,5 +1,5 @@
-import ConditionItem from "@/src/components/common/layout/conditions/conditionItem";
-import {Button} from "antd";
+import ConditionItem from "@/components/common/layout/conditions/conditionItem";
+import { Button } from "antd";
 
 export default function ConditionPanel(props) {
     const {

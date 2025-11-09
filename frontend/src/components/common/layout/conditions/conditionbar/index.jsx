@@ -1,4 +1,4 @@
-import ConditionPanel from "@/src/components/common/layout/conditions/conditionPanel";
+import ConditionPanel from "@/components/common/layout/conditions/conditionPanel";
 
 export default function ConditionBar(props) {
     const {
