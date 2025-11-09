@@ -108,8 +108,8 @@ export default function ConditionPicker(props) {
         return (
             <DatePicker
                 popupStyle={{fontSize: "14px"}}
-                defaultValue={value}
-                onChange={(date, dateString) => onChange({ target: { value: dateString } })}
+                value={value ? dayjs(value, 'YYYY-MM-DD') : null}
+                onChange={(date, dateString) => onChange(dateString)}
             />
         );
     }
@@ -120,8 +120,11 @@ export default function ConditionPicker(props) {
         return (
             <RangePicker
                 popupStyle={{fontSize: "14px"}}
-                defaultValue={[dayjs(from, 'YYYY-MM-DD'), dayjs(to, 'YYYY-MM-DD')]}
-                onChange={(_, dateString) => onChange({ target: { value: { from: dateString[0], to: dateString[1] } }})}
+                value={[
+                    from ? dayjs(from, 'YYYY-MM-DD') : null, 
+                    to ? dayjs(to, 'YYYY-MM-DD') : null
+                ]}
+                onChange={(dates, dateStrings) => onChange({ from: dateStrings[0], to: dateStrings[1] })}
             />
         );
     }

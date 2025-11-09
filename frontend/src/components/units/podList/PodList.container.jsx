@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { fetchPods, createPod } from "@redux/slices/podSlice";
 import PodListPresenter from "./PodList.presenter";
 import AddPodContainer from "../../common/modals/AddPod/AddPodContainer";
+import axiosInstance from "@/api/axiosInstance";
 
 export default function PodListContainer() {
     const dispatch = useDispatch();
@@ -55,6 +56,29 @@ export default function PodListContainer() {
         dispatch(fetchPods());
     };
 
+    const handleRagSearch = async (query) => {
+        try {
+            const response = await axiosInstance.post('/rag/search', {
+                query: query
+            });
+            
+            if (response.data) {
+                return {
+                    llm_answer: response.data.llm_answer,
+                    retrieved_pods: response.data.retrieved_pods,
+                    total_found: response.data.total_found
+                };
+            }
+            return null;
+        } catch (error) {
+            console.error("RAG 검색 오류:", error);
+            console.error("에러 상세:", error.response?.data);
+            console.error("에러 상태:", error.response?.status);
+            console.error("요청 URL:", error.config?.url);
+            throw error;
+        }
+    };
+
     // 필터링된 POD 목록
     const filteredPods = pods.filter(pod => {
         const titleMatch = !filters.podTitle || pod.title?.includes(filters.podTitle);
@@ -72,6 +96,7 @@ export default function PodListContainer() {
                 filters={filters}
                 onFilterChange={handleFilterChange}
                 onSearch={handleSearch}
+                onRagSearch={handleRagSearch}
             />
             <AddPodContainer 
                 isOpen={isPodModalOpen}

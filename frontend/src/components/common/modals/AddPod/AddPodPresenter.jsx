@@ -1,97 +1,122 @@
 import { Dialog, DialogTitle, DialogContent } from "@mui/material";
-import { Input, DatePicker, ConfigProvider, Button } from "antd";
+import { Input, DatePicker, ConfigProvider, Button, Select } from "antd";
 import locale from "antd/locale/ko_KR";
+
+const { TextArea } = Input;
 
 export default function AddPodPresenter({
                                                  isOpen,
                                                  onClose,
                                                  form,
                                                  handleChange,
-                                                 handleDateChange,
+                                                 handleEventDateChange,
+                                                 handleCategoryChange,
                                                  handleSubmit,
-                                                 isDatePickerOpen,
-                                                 setIsDatePickerOpen,
                                                  hasErrors,
-                                                 errors
+                                                 errors,
+                                                 categories
                                              }) {
-    const dialogHeight = isDatePickerOpen ? "850px" : hasErrors ? "650px" : "580px";
+    const dialogHeight = hasErrors ? "750px" : "680px";
 
     return (
         <Dialog
             open={isOpen}
             onClose={onClose}
             slotProps={{
-                paper: { style: { width: "480px", height: dialogHeight } }
+                paper: { style: { width: "480px", height: dialogHeight, maxHeight: "90vh" } }
             }}
         >
             <DialogTitle className="flex justify-start pl-[50px] pt-10 text-black text-[23px] font-semibold">
-                팟 생성
+                POD 생성
             </DialogTitle>
 
-            <DialogContent className="p-6 flex flex-col justify-between h-full items-center">
+            <DialogContent className="p-6 flex flex-col justify-between h-full items-center overflow-y-auto">
                 <div className="space-y-4 pt-3 w-full px-7">
-                    {[
-                        { label: "제목", name: "podTitle", placeholder: "제목 입력", value: form.podTitle, error: errors.podTitle },
-                        { label: "최소 인원", name: "minPeople", placeholder: "최소 인원 입력", value: form.minPeople, error: errors.minPeople },
-                        { label: "최대 인원", name: "maxPeople", placeholder: "최대 인원 입력", value: form.maxPeople, error: errors.maxPeople },
-                        { label: "계좌번호", name: "accountNumber", placeholder: "계좌번호 입력", value: form.accountNumber, error: errors.accountNumber },
-                        { label: "소유주", name: "owner", placeholder: "소유주 입력", value: form.owner, error: errors.owner }
-                    ].map((field, index) => (
-                        <div key={index} className="flex flex-col space-y-1">
-                            <div className="flex flex-row items-center space-x-2 w-full">
-                                <label className="text-black text-[16px] font-medium w-[80px]">{field.label}</label>
-                                <Input
-                                    name={field.name}
-                                    value={field.value}
-                                    onChange={handleChange}
-                                    placeholder={field.placeholder}
-                                    status={field.error ? "error" : ""}
-                                    className="h-[45px] text-[16px] flex-1"
-                                />
-                            </div>
-                            {field.error && <p className="text-red-500 text-sm mt-1 ml-[90px]">{field.error}</p>}
-                        </div>
-                    ))}
-
+                    {/* 제목 */}
                     <div className="flex flex-col space-y-1">
                         <div className="flex flex-row items-center space-x-2 w-full">
-                            <label className="text-black text-[16px] font-medium w-[80px]">개설일</label>
+                            <label className="text-black text-[16px] font-medium w-[80px]">제목</label>
+                            <Input
+                                name="title"
+                                value={form.title}
+                                onChange={handleChange}
+                                placeholder="POD 제목을 입력하세요"
+                                status={errors.title ? "error" : ""}
+                                className="h-[45px] text-[16px] flex-1"
+                            />
+                        </div>
+                        {errors.title && <p className="text-red-500 text-sm mt-1 ml-[90px]">{errors.title}</p>}
+                    </div>
+
+                    {/* 설명 */}
+                    <div className="flex flex-col space-y-1">
+                        <div className="flex flex-row items-start space-x-2 w-full">
+                            <label className="text-black text-[16px] font-medium w-[80px] pt-2">설명</label>
+                            <TextArea
+                                name="content"
+                                value={form.content}
+                                onChange={handleChange}
+                                placeholder="POD 설명을 입력하세요"
+                                status={errors.content ? "error" : ""}
+                                className="text-[16px] flex-1"
+                                rows={3}
+                            />
+                        </div>
+                        {errors.content && <p className="text-red-500 text-sm mt-1 ml-[90px]">{errors.content}</p>}
+                    </div>
+
+                    {/* 장소 */}
+                    <div className="flex flex-col space-y-1">
+                        <div className="flex flex-row items-center space-x-2 w-full">
+                            <label className="text-black text-[16px] font-medium w-[80px]">장소</label>
+                            <Input
+                                name="place"
+                                value={form.place}
+                                onChange={handleChange}
+                                placeholder="모임 장소를 입력하세요"
+                                status={errors.place ? "error" : ""}
+                                className="h-[45px] text-[16px] flex-1"
+                            />
+                        </div>
+                        {errors.place && <p className="text-red-500 text-sm mt-1 ml-[90px]">{errors.place}</p>}
+                    </div>
+
+                    {/* 이벤트 일시 */}
+                    <div className="flex flex-col space-y-1">
+                        <div className="flex flex-row items-center space-x-2 w-full">
+                            <label className="text-black text-[16px] font-medium w-[80px]">이벤트 일시</label>
                             <ConfigProvider locale={locale}>
                                 <DatePicker
-                                    value={form.openDate}
-                                    onChange={handleDateChange}
-                                    format="YYYY-MM-DD"
-                                    placeholder="개설일 선택"
-                                    status={errors.openDate ? "error" : ""}
+                                    value={form.event_time}
+                                    onChange={handleEventDateChange}
+                                    showTime
+                                    format="YYYY-MM-DD HH:mm"
+                                    placeholder="이벤트 일시 선택"
+                                    status={errors.event_time ? "error" : ""}
                                     className="h-[45px] flex-1"
                                     getPopupContainer={(trigger) => trigger.parentElement}
-                                    open={isDatePickerOpen}
-                                    onOpenChange={(open) => setIsDatePickerOpen(open)}
                                 />
                             </ConfigProvider>
                         </div>
-                        {errors.openDate && <p className="text-red-500 text-sm mt-1 ml-[90px]">{errors.openDate}</p>}
-                    </div>
-                    <div className="flex flex-col space-y-1">
-                        <div className="flex flex-row items-center space-x-2 w-full">
-                            <label className="text-black text-[16px] font-medium w-[80px]">마감일</label>
-                            <ConfigProvider locale={locale}>
-                                <DatePicker
-                                    value={form.expireDate}
-                                    onChange={handleDateChange}
-                                    format="YYYY-MM-DD"
-                                    placeholder="마감일 선택"
-                                    status={errors.expireDate ? "error" : ""}
-                                    className="h-[45px] flex-1"
-                                    getPopupContainer={(trigger) => trigger.parentElement}
-                                    open={isDatePickerOpen}
-                                    onOpenChange={(open) => setIsDatePickerOpen(open)}
-                                />
-                            </ConfigProvider>
-                        </div>
-                        {errors.expireDate && <p className="text-red-500 text-sm mt-1 ml-[90px]">{errors.expireDate}</p>}
+                        {errors.event_time && <p className="text-red-500 text-sm mt-1 ml-[90px]">{errors.event_time}</p>}
                     </div>
 
+                    {/* 카테고리 */}
+                    <div className="flex flex-col space-y-1">
+                        <div className="flex flex-row items-center space-x-2 w-full">
+                            <label className="text-black text-[16px] font-medium w-[80px]">카테고리</label>
+                            <Select
+                                mode="multiple"
+                                value={form.category_ids}
+                                onChange={handleCategoryChange}
+                                placeholder="카테고리를 선택하세요"
+                                status={errors.category_ids ? "error" : ""}
+                                className="flex-1"
+                                options={categories}
+                            />
+                        </div>
+                        {errors.category_ids && <p className="text-red-500 text-sm mt-1 ml-[90px]">{errors.category_ids}</p>}
+                    </div>
                 </div>
 
                 <Button

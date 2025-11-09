@@ -9,11 +9,15 @@ export default function LayoutWrapper({ children, showSidebar = false }) {
 
     useEffect(() => {
         const token = localStorage.getItem('access_token');
-        setIsLoggedIn(!!token);
-    }, []);
+        const loggedIn = !!token;
+        setIsLoggedIn(loggedIn);
+        
+        if (!loggedIn) {
+            navigate('/');
+        }
+    }, [navigate]);
 
     if (!isLoggedIn) {
-        navigate('/');
         return null;
     }
 
