@@ -8,22 +8,26 @@ export default function OAuthCallback() {
     const dispatch = useDispatch();
 
     useEffect(() => {
-        // URL에서 토큰 추출
+        // URL에서 토큰 추출 (백엔드가 보내는 파라미터 이름: token, is_new_user)
         const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get('access_token');
-        const userName = urlParams.get('user_name') || '사용자';
+        const token = urlParams.get('token'); // 'access_token'이 아니라 'token'
+        const isNewUser = urlParams.get('is_new_user');
 
         if (token) {
             // 로컬스토리지에 토큰 저장
             localStorage.setItem('access_token', token);
             localStorage.setItem('is_authenticated', 'true');
             
-            // Redux에 사용자 정보 저장
-            dispatch(setUser({ userName }));
+            // Redux에 사용자 정보 저장 (임시로 '사용자'로 설정)
+            dispatch(setUser({ userName: '사용자' }));
             
-            // 메인 페이지로 리다이렉트
+            // 신규 유저면 프로필 설정 페이지로, 아니면 POD 목록으로
             setTimeout(() => {
-                navigate('/');
+                if (isNewUser === 'true') {
+                    navigate('/profile/setup'); // 프로필 설정 페이지 (아직 없으면 /pods로)
+                } else {
+                    navigate('/pods');
+                }
             }, 500);
         } else {
             alert('로그인에 실패했습니다.');
