@@ -263,7 +263,7 @@ BEGIN
             "$[*]" COLUMNS (`pod_id_str` VARCHAR(20) PATH "$")
         ) AS `jt`
     )
-    AND (`in_place_keyword` IS NULL OR p.`place` LIKE CONCAT('%', `in_place_keyword`, '%'))
+    AND (`in_place_keyword` IS NULL OR p.`place` COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', `in_place_keyword` COLLATE utf8mb4_unicode_ci, '%'))
     AND (`in_category_id` IS NULL OR EXISTS (
         SELECT 1 FROM `CategoryLink` cl
         WHERE cl.`pod_id` = p.`pod_id` AND cl.`category_id` = `in_category_id`
@@ -310,9 +310,9 @@ INSERT INTO `User` (`username`, `phonenumber`) VALUES
 ('테스트유저3', '010-3456-7890');
 
 INSERT INTO `Pod` (`host_user_id`, `event_time`, `place`, `title`, `content`) VALUES
-(1, '2025-11-01 14:00:00', '강남역 2번 출구', '주말 러닝 모임', '같이 한강 러닝하실 분 구합니다!'),
-(2, '2025-11-05 19:00:00', '홍대 카페 XXX', '영화 스터디 모임', '영화 이야기 나누며 영어 공부해요.'),
-(3, '2025-11-10 10:00:00', '성수동 베이킹 스튜디오', '베이킹 클래스', '초보자도 환영합니다.');
+(1, '2025-12-15 14:00:00', '강남역 2번 출구', '주말 러닝 모임', '같이 한강 러닝하실 분 구합니다!'),
+(2, '2025-12-20 19:00:00', '홍대 카페 XXX', '영화 스터디 모임', '영화 이야기 나누며 영어 공부해요.'),
+(3, '2025-12-25 10:00:00', '성수동 베이킹 스튜디오', '베이킹 클래스', '초보자도 환영합니다.');
 
 INSERT INTO `CategoryLink` (`pod_id`, `category_id`) VALUES
 (1, 3),

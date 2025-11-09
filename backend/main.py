@@ -112,18 +112,7 @@ async def health_check():
         "rag_worker": "running" if worker_thread and worker_thread.is_alive() else "stopped"
     }
 
-
-
-
-
-
-
-
-""" # 1. Backend 폴더로 이동
-cd C:\Users\KiKi\Desktop\DataBaseProject\Hot-s-Pod\Backend
-
-# 2. 콘다 환경 활성화
-conda activate hots_pod
-
-# 3. 서버 실행
-python -m uvicorn main:app --host 0.0.0.0 --port 8000 """
+# 서버 실행 방법:
+# 1. Backend 폴더로 이동: cd C:\Users\KiKi\Desktop\DataBaseProject\Hot-s-Pod\Backend
+# 2. 콘다 환경 활성화: conda activate hots_pod
+# 3. 서버 실행: python -m uvicorn main:app --host 0.0.0.0 --port 8000
