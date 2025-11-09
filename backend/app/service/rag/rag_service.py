@@ -42,8 +42,24 @@ class RagService: #친절한 주석 < -RAG서비스
         if not results['ids'] or not results['ids'][0]:
             logger.warning("No vector search results") # 진짜 예외처리 안하는데 코파일럿이 이거보고 죽일라해서 넣음
             return []
+        
+        # 유사도 임계값 필터링 (distance가 낮을수록 유사, 0.7 이상이면 관련없다고 판단)
+        SIMILARITY_THRESHOLD = 0.7
+        retrieved_pod_ids = []
+        distances = results['distances'][0] if results['distances'] else []
+        
+        for idx, (id_str, distance) in enumerate(zip(results['ids'][0], distances)):
+            if distance < SIMILARITY_THRESHOLD:
+                retrieved_pod_ids.append(int(id_str))
+                logger.debug(f"POD {id_str}: distance={distance:.4f} (PASS)")
+            else:
+                logger.debug(f"POD {id_str}: distance={distance:.4f} (FILTERED OUT)")
+        
+        if not retrieved_pod_ids:
+            logger.info("No PODs passed similarity threshold")
+            return []
             
-        retrieved_pod_ids = [int(id_str) for id_str in results['ids'][0]] #벡터검색으로 찾은 pod 들인데 이제 RDB필터링을 해봅시다
+        # 벡터검색으로 찾은 pod 들인데 이제 RDB필터링을 해봅시다
         # RDB필터링이 뭐냐면 벡터검색은 그냥 유사도 높은거 찾는거라서, 사용자가 장소나 카테고리 조건을 넣었을때 그걸 반영못함
         # 그래서 RDB에서 다시 필터링하는 과정이 필요함
         logger.info(f"Found {len(retrieved_pod_ids)} candidates")
