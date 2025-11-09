@@ -59,16 +59,22 @@ export default function PodListContainer() {
     const handleRagSearch = async (query) => {
         try {
             const response = await axiosInstance.post('/rag/search', {
-                query: query,
-                top_k: 5
+                query: query
             });
             
-            if (response.data && response.data.results) {
-                return response.data.results;
+            if (response.data) {
+                return {
+                    llm_answer: response.data.llm_answer,
+                    retrieved_pods: response.data.retrieved_pods,
+                    total_found: response.data.total_found
+                };
             }
-            return [];
+            return null;
         } catch (error) {
             console.error("RAG 검색 오류:", error);
+            console.error("에러 상세:", error.response?.data);
+            console.error("에러 상태:", error.response?.status);
+            console.error("요청 URL:", error.config?.url);
             throw error;
         }
     };

@@ -47,6 +47,8 @@ class RagService: #친절한 주석 < -RAG서비스
         # RDB필터링이 뭐냐면 벡터검색은 그냥 유사도 높은거 찾는거라서, 사용자가 장소나 카테고리 조건을 넣었을때 그걸 반영못함
         # 그래서 RDB에서 다시 필터링하는 과정이 필요함
         logger.info(f"Found {len(retrieved_pod_ids)} candidates")
+        logger.info(f"Vector search POD IDs: {retrieved_pod_ids}")
+        logger.info(f"Place keyword: {place_keyword}, Category ID: {found_category_id}")
         final_pods = rag_query_repo.filter_pods(
             pod_ids=retrieved_pod_ids,
             place_keyword=place_keyword,
@@ -90,5 +92,5 @@ class RagService: #친절한 주석 < -RAG서비스
             }
         ]
         
-        response = llm_instance.generate_response(messages, max_new_tokens=256, do_sample=True)
+        response = llm_instance.generate_response(messages, max_new_tokens=128, do_sample=True)
         return response

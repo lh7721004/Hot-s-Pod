@@ -14,13 +14,15 @@ class LLMModel:
         )
         self.gen_config = GenerationConfig.from_pretrained(self.model_name)
     
-    def generate_response(self, messages, max_new_tokens=512, do_sample=True):
+    def generate_response(self, messages, max_new_tokens=128, do_sample=True):
         input_ids = self.tokenizer.apply_chat_template(
             messages, tokenize=True, add_generation_prompt=True, return_tensors="pt"
         ).to(self.llm.device)
         output = self.llm.generate(
-            input_ids, generation_config=self.gen_config, 
-            max_new_tokens=max_new_tokens, do_sample=do_sample
+            input_ids, 
+            generation_config=self.gen_config, 
+            max_new_tokens=max_new_tokens, 
+            do_sample=do_sample
         )
         response = self.tokenizer.decode(output[0][input_ids.shape[-1]:], skip_special_tokens=True)
         return response.strip()

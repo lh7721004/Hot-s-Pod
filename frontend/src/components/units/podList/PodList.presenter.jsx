@@ -4,7 +4,8 @@ import { useState } from "react";
 
 export default function PodListPresenter({ pods, loading, onOpenPodModal, onChatClick, onBackClick, filters, onFilterChange, onSearch, onRagSearch }) {
     const [ragQuery, setRagQuery] = useState("");
-    const [ragResults, setRagResults] = useState([]);
+    const [ragAnswer, setRagAnswer] = useState("");
+    const [ragPods, setRagPods] = useState([]);
     const [ragLoading, setRagLoading] = useState(false);
 
     if (loading) {
@@ -23,8 +24,11 @@ export default function PodListPresenter({ pods, loading, onOpenPodModal, onChat
         
         setRagLoading(true);
         try {
-            const results = await onRagSearch(ragQuery);
-            setRagResults(results || []);
+            const result = await onRagSearch(ragQuery);
+            if (result) {
+                setRagAnswer(result.llm_answer || "답변을 생성할 수 없습니다.");
+                setRagPods(result.retrieved_pods || []);
+            }
         } catch (error) {
             console.error("RAG 검색 실패:", error);
             alert("검색에 실패했습니다");
@@ -68,12 +72,12 @@ export default function PodListPresenter({ pods, loading, onOpenPodModal, onChat
 
             {/* RAG 검색 영역 */}
             <div className="mb-6 bg-white p-6 rounded-lg shadow">
-                <h2 className="text-xl font-bold mb-4">🔍 AI 검색 (RAG)</h2>
-                <div className="flex gap-2">
+                <h2 className="text-xl font-bold mb-4">🤖 AI 챗봇 (POD 추천)</h2>
+                <div className="flex gap-2 mb-4">
                     <Input
                         value={ragQuery}
                         onChange={(e) => setRagQuery(e.target.value)}
-                        placeholder="POD 내용을 자연어로 검색하세요 (예: 스터디 모임 찾아줘)"
+                        placeholder="원하는 모임을 자연어로 물어보세요 (예: 영화 보러 갈 사람 찾아줘)"
                         onPressEnter={handleRagSearch}
                         size="large"
                         className="flex-1"
@@ -85,20 +89,53 @@ export default function PodListPresenter({ pods, loading, onOpenPodModal, onChat
                         size="large"
                         className="bg-blue-500"
                     >
-                        검색
+                        질문하기
                     </Button>
                 </div>
                 
-                {ragResults.length > 0 && (
-                    <div className="mt-4">
-                        <h3 className="font-bold mb-2">검색 결과:</h3>
-                        <div className="space-y-2">
-                            {ragResults.map((result, idx) => (
-                                <div key={idx} className="p-3 bg-gray-50 rounded border">
-                                    <div className="text-sm text-gray-600">{result}</div>
+                {ragAnswer && (
+                    <div className="mt-4 space-y-4">
+                        {/* AI 답변 */}
+                        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                            <div className="flex items-start gap-3">
+                                <div className="text-2xl">🤖</div>
+                                <div className="flex-1">
+                                    <div className="font-bold text-blue-900 mb-2">AI 답변:</div>
+                                    <div className="text-gray-800 whitespace-pre-wrap">{ragAnswer}</div>
                                 </div>
-                            ))}
+                            </div>
                         </div>
+                        
+                        {/* 추천 POD 목록 */}
+                        {ragPods.length > 0 && (
+                            <div>
+                                <h3 className="font-bold mb-3 text-gray-700">📋 추천 POD 목록 ({ragPods.length}개)</h3>
+                                <div className="space-y-2">
+                                    {ragPods.map((pod) => (
+                                        <div key={pod.pod_id} className="p-4 bg-gray-50 rounded-lg border hover:bg-gray-100 transition-colors">
+                                            <div className="flex justify-between items-start">
+                                                <div className="flex-1">
+                                                    <div className="font-bold text-lg text-gray-900">{pod.title}</div>
+                                                    <div className="text-sm text-gray-600 mt-1">{pod.content || '설명 없음'}</div>
+                                                    <div className="flex gap-4 mt-2 text-xs text-gray-500">
+                                                        <span>📍 {pod.place}</span>
+                                                        <span>📅 {new Date(pod.event_time).toLocaleString('ko-KR')}</span>
+                                                        <span>👤 {pod.host_username}</span>
+                                                    </div>
+                                                </div>
+                                                <Button
+                                                    onClick={() => onChatClick(pod.pod_id)}
+                                                    type="primary"
+                                                    className="bg-green-500"
+                                                >
+                                                    채팅 참여
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
