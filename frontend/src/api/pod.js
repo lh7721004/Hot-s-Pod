@@ -1,16 +1,16 @@
 import axios from './axiosInstance';
 
 /**
- * 유저 소속 전체 팟 조회
+ * 전체 POD 조회
  */
 export async function fetchAllPods() {
-    const response = await axios.get(`/user/me/club/all`);
+    const response = await axios.get(`/pod/`);
     return response.data;
 }
 
 
 /**
- * 유저 소속 팟 조회
+ * 사용자 POD 조회
  * @param page 페이지 번호 (기본값: 0)
  * @param size 페이지 크기 (기본값: 8)
  */
@@ -42,8 +42,8 @@ export async function fetchAllPods() {
 }
 
 /**
- * 팟 인원 조회
- * @param podId 팟 ID
+ * POD 멤버 조회
+ * @param podId POD ID
  * @param page 페이지 번호 (기본값: 0)
  * @param size 페이지 크기 (기본값: 10)
  */

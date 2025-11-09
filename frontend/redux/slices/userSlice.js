@@ -1,15 +1,15 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-export const fetchUserAndClubs = createAsyncThunk(
-  'user/fetchUserAndClubs',
+export const fetchUserAndPods = createAsyncThunk(
+  'user/fetchUserAndPods',
   async (_, { rejectWithValue }) => {
     try {
       const userRes = await axios.get("/user/me", { withCredentials: true });
-      const clubsRes = await axios.get("/user/me/club", { withCredentials: true });
+      const podsRes = await axios.get("/pod/", { withCredentials: true });
       return {
         user: userRes.data,
-        clubs: clubsRes.data.content,
+        pods: podsRes.data.content || podsRes.data,
       };
     } catch (err) {
       return rejectWithValue(err.response?.data || 'Error fetching data');
@@ -21,7 +21,8 @@ const userSlice = createSlice({
   name: 'user',
   initialState: {
     user: null,
-    clubs: [],
+    userName: '',
+    pods: [],
     loading: false,
     error: null,
   },
@@ -29,24 +30,34 @@ const userSlice = createSlice({
     setEmail(state, action) {
       if (state.user) state.user.email = action.payload;
     },
+    setUser(state, action) {
+      state.user = action.payload;
+      state.userName = action.payload.userName || '';
+    },
+    clearUser(state) {
+      state.user = null;
+      state.userName = '';
+      state.pods = [];
+    },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchUserAndClubs.pending, (state) => {
+      .addCase(fetchUserAndPods.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchUserAndClubs.fulfilled, (state, action) => {
+      .addCase(fetchUserAndPods.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user;
-        state.clubs = action.payload.clubs;
+        state.userName = action.payload.user?.name || '';
+        state.pods = action.payload.pods;
       })
-      .addCase(fetchUserAndClubs.rejected, (state, action) => {
+      .addCase(fetchUserAndPods.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
   },
 });
 
-export const { setEmail } = userSlice.actions;
+export const { setEmail, setUser, clearUser } = userSlice.actions;
 export default userSlice.reducer;

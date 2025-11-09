@@ -66,21 +66,16 @@ async def kakao_callback(
             expires_delta=timedelta(minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
         )
         
-        return JSONResponse(content={
-            "access_token": access_token,
-            "token_type": "bearer",
-            "user": {
-                "user_id": user_info['user_id'],
-                "username": user_info['username'],
-                "profile_picture": user_info.get('profile_picture'),
-                "is_new_user": user_info['is_new_user']
-            }
-        })
+        # 프론트엔드로 리다이렉트
+        frontend_url = f"{settings.FRONTEND_URL}/oauth/callback?token={access_token}&is_new_user={user_info['is_new_user']}"
+        return RedirectResponse(url=frontend_url)
     
-    except requests.exceptions.RequestException as e:
-        raise HTTPException(status_code=400, detail=f"카카오 API 요청 실패: {str(e)}")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"서버 오류: {str(e)}")
+    except requests.exceptions.RequestException:
+        raise HTTPException(status_code=400, detail="카카오 로그인 처리 중 오류가 발생했습니다.")
+    except ValueError:
+        raise HTTPException(status_code=400, detail="잘못된 요청입니다.")
+    except Exception:
+        raise HTTPException(status_code=500, detail="서버 오류가 발생했습니다.")
 
 @router.get("/logout")
 async def logout(access_token: str = Query(..., description="카카오 액세스 토큰")):
@@ -92,5 +87,5 @@ async def logout(access_token: str = Query(..., description="카카오 액세스
         )
         logout_response.raise_for_status()
         return {"message": "로그아웃 성공"}
-    except requests.exceptions.RequestException as e:
-        raise HTTPException(status_code=400, detail=f"카카오 로그아웃 실패: {str(e)}")
+    except requests.exceptions.RequestException:
+        raise HTTPException(status_code=400, detail="카카오 로그아웃 처리 중 오류가 발생했습니다.")

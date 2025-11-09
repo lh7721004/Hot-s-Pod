@@ -25,8 +25,10 @@ async def create_user(
     try:
         user_id = service.create_user(request)
         return {"user_id": user_id, "message": "User created successfully"}
-    except Exception as e:
+    except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except Exception:
+        raise HTTPException(status_code=500, detail="사용자 생성 중 오류가 발생했습니다.")
 
 @router.get("/me", response_model=UserResponse)
 async def get_my_profile(

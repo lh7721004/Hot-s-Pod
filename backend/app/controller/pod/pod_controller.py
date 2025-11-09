@@ -24,8 +24,10 @@ async def create_pod(
     try:
         pod_id = pod_service.create_pod(pod_data)
         return {"pod_id": pod_id, "message": "Pod created successfully"}
-    except Exception as e:
+    except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except Exception:
+        raise HTTPException(status_code=500, detail="Pod 생성 중 오류가 발생했습니다.")
 
 @router.get("/{pod_id}", response_model=PodResponse)
 async def get_pod(
