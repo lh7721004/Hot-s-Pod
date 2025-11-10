@@ -1,4 +1,4 @@
-import ConditionPicker from "@/src/components/common/layout/conditions/conditionPicker";
+import ConditionPicker from "@/components/common/layout/conditions/conditionPicker";
 
 export default function ConditionItem(props) {
     const {
