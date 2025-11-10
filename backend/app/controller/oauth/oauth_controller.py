@@ -19,7 +19,6 @@ async def kakao_login():
         f"&redirect_uri={settings.KAKAO_REDIRECT_URI}"
         f"&response_type=code"
     )
-    
     return RedirectResponse(url=kakao_auth_url)
 
 @router.get("/kakao/callback")
@@ -33,11 +32,8 @@ async def kakao_callback(
             "client_id": settings.KAKAO_REST_API_KEY,
             "redirect_uri": settings.KAKAO_REDIRECT_URI,
             "code": code,
+            "client_secret": settings.KAKAO_CLIENT_SECRET
         }
-        
-        if settings.KAKAO_CLIENT_SECRET:
-            token_data["client_secret"] = settings.KAKAO_CLIENT_SECRET
-        
         token_response = requests.post(
             "https://kauth.kakao.com/oauth/token",
             headers={"Content-Type": "application/x-www-form-urlencoded;charset=utf-8"},
@@ -50,14 +46,12 @@ async def kakao_callback(
         profile_response = requests.get(
             "https://kapi.kakao.com/v2/user/me",
             headers={
-                "Authorization": f"Bearer {tokens['access_token']}",
-                "Content-type": "application/x-www-form-urlencoded;charset=utf-8"
+                "Authorization": f"Bearer {tokens['access_token']}"
             },
             timeout=10
         )
         profile_response.raise_for_status()
         kakao_profile = profile_response.json()
-        
         oauth_service = OAuthService(db)
         user_info = oauth_service.kakao_login_or_register(kakao_profile, tokens)
         
