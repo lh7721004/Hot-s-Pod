@@ -8,9 +8,18 @@ import { useMe } from "../../../queries/useMe.js";
 
 
 export default function Main() {
+    const categories = ["전체","스터디","취미,여가","운동"];
+    const [selectedCategory,setSelectedCategory] = useState(0); 
     const [isPodModalOpen, setIsPodModalOpen] = useState(false);
     const { data, isLoading, isError } = useMe();
-
+    const [open, setOpen] = useState(false);
+    const [orderBy, setOrderBy] = useState("최신순");
+    const handleClick = (event) => {
+        setAnchorEl(event.currentTarget);
+    };
+    const handleClose = () => {
+        setAnchorEl(null);
+    };
     useEffect(() => {
         if (data)
             console.log("[Main.container.jsx] me:", data);
@@ -44,6 +53,11 @@ export default function Main() {
         navigate(`/chat/${podId}`);
     };
 
+    const handleChange = (event) => {
+        console.log(event)
+        setOrderBy(event.target.value);
+    }
+
     let announcements = [
         {title: '공지1', content: '공지내용 1 공지내용 1 공지내용 1 공지내용 1공지내용  1 공지내용 1공지내용 1 공지내용 1  공지내용 1공지내용 1공지내용 1공지내용 1', date: '2024-01-12'},
         {title: '공지1', content: '공지내용 1', date: '2024-01-12'},
@@ -62,10 +76,18 @@ export default function Main() {
     return (
         <>
             <MainUI 
-                announcements={announcements} 
+                // open={open} 
+                // setOpen={setOpen}
+                // handleClick={handleClick}
+                // handleClose={handleClose}
+                categories={categories}
+                selectedCategory={selectedCategory}
+                setSelectedCategory={setSelectedCategory}
+                orderBy={orderBy}
+                handleChange={handleChange}
                 pods={pods}
                 onOpenPodModal={handleOpenPodModal}
-                onViewAllPods={handleViewAllPods}
+                // onViewAllPods={handleViewAllPods}
                 onPodClick={handlePodClick}
             />
             <AddPodContainer 

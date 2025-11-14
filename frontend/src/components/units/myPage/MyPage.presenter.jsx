@@ -7,6 +7,7 @@ import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import { useState } from 'react';
 import SizeComponent from "../../common/icon/SizeComponent";
+import Footer from "../../common/layout/footer/index.jsx"
 function CustomTabPanel(props) {
   const { children, value, index, ...other } = props;
 
@@ -39,9 +40,10 @@ function Card({title,description,peoples,image}){
 
 export default function MyPageUI() {
     const [value, setValue] = useState(0);
+    const [active, setActive] = useState(3);
 
     const handleChange = (event, newValue) => {
-    setValue(newValue);
+        setValue(newValue);
     };
     return(
         <div className="flex flex-col w-full gap-8">
@@ -137,6 +139,7 @@ export default function MyPageUI() {
                     image={"Image"}
                 />
             </CustomTabPanel>
+            <Footer active={active} setActive={setActive}/>
         </div>
     )
 }

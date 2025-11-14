@@ -1,4 +1,5 @@
 # backend/main.py
+# uvicorn main:app --reload --host 127.0.0.1 --port 8000
 import threading
 import asyncio
 from contextlib import asynccontextmanager
