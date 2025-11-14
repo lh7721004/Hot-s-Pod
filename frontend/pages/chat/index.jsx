@@ -4,7 +4,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchChatMessages, sendChatMessage } from "@redux/slices/chatSlice";
 import { useMe } from "../../src/queries/useMe"; // 로그인 사용자 정보 (쿠키 기반)
-
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
+import AccessTimeOutlinedIcon from '@mui/icons-material/AccessTimeOutlined';
+import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import SizeComponent from "../../src/components/common/icon/SizeComponent";
 export default function ChatPage() {
   const { podId } = useParams();
   const navigate = useNavigate();
@@ -140,23 +145,69 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gray-100 w-full">
+    <div className="flex flex-col h-full w-full bg-gray-100 p-3">
       {/* 헤더 */}
-      <div className="flex flex-row justify-between items-center p-4 bg-white shadow-sm">
-        <h1 className="text-xl font-bold">POD 채팅방 #{podId}</h1>
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-gray-600">안녕하세요, {me?.username ?? me?.nickname ?? "사용자"}님</span>
-          <button
-            onClick={() => navigate("/pods")}
-            className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
-          >
-            목록으로
-          </button>
+      <div className="flex flex-row justify-between items-center p-4 shadow-sm">
+          <SizeComponent Component={ArrowBackIcon} onClick={() => navigate(-1)} className={"cursor-pointer"}/>
+        <div className="flex flex-row gap-3">
+          <div className="text-xl font-bold">POD 상세 정보</div>
+          <div className="flex flex-col justify-center text-[#000000]">#{podId}</div>
         </div>
+        <div></div>
       </div>
+      <div className="flex flex-col gap-8 py-8">
+        <div className="text-3xl font-black">함께하는 주말 코딩 스터디</div>
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-row gap-2">
+            <SizeComponent Component={PlaceOutlinedIcon} fontSize={48} className={"bg-[#C9E6F5] text-[#00A2EC] p-1 rounded-lg"}/>
+            <div className="flex flex-col justify-center font-semibold">강남역 XYZ 카페</div>
+          </div>
+          <div className="flex flex-row gap-2">
+            <SizeComponent Component={AccessTimeOutlinedIcon} fontSize={48} className={"bg-[#C9E6F5] text-[#00A2EC] p-1 rounded-lg"}/>
+            <div className="flex flex-col justify-center font-semibold">매주 토요일 오후 2시~5시</div>
+          </div>
+          <div className="flex flex-row gap-2">
+            <SizeComponent Component={PeopleAltOutlinedIcon} fontSize={48} className={"bg-[#C9E6F5] text-[#00A2EC] p-1 rounded-lg"}/>
+            <div className="flex flex-col justify-center font-semibold">3/5</div>
+          </div>
+        </div>
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-col bg-white p-3 rounded-xl">
+            <div className="font-bold text-xl">스터디 설명</div>
+            <div>이 스터디는 어쩌구 저쩌구 어쩌구 저쩌구 어쩌구 저쩌구 어쩌구 저쩌구 어쩌구 저쩌구 어쩌구 저쩌구 어쩌구 저쩌구 어쩌구 저쩌구 어쩌구 저쩌구 어쩌구 저쩌구 어쩌구 저쩌구</div>
+            <br/>
+            <div>준비물 : 개인 노트북, 열정적인 마음!</div>
+          </div>
+        </div>
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2">
+            <div className="font-bold text-xl">참여자(3)</div>
+            <div className="flex flex-row">
+              {["red","green","blue"].map((value,index)=>{
+                return(<div className={`w-16 h-16 bg-${value}-600 rounded-full mr-[-15px]`}></div>)
+              })}
+            </div>
+          </div>
+          <div className="flex flex-col gap-4 w-full pb-8">
+            <div className="font-bold text-xl">댓글</div>
+            <div className="flex flex-col w-full">
+              <div className="flex flex-row gap-2 w-full">
+                <div className="w-8 h-8 rounded-full bg-red-600"></div>
+                <div className="flex flex-col p-2 bg-white rounded-md w-full">
+                  <div className="flex flex-row justify-between">
+                    <div className="font-bold">김민준</div>
+                    <div className="text-xs text-[#888888]">2시간 전</div>
+                  </div>
+                  <p className="w-full">정말 기대되는 스터디네요! 혹시 스터디 전에 미리 읽어보면 좋을 자료가 있을까요?</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
+      </div>
       {/* 채팅 메시지 영역 */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 hidden">
         {allMessages.length === 0 ? (
           <div className="text-center text-gray-500 mt-10">첫 메시지를 보내보세요!</div>
         ) : (
@@ -180,14 +231,44 @@ export default function ChatPage() {
         )}
         <div ref={messagesEndRef} />
       </div>
+      {/* 입력 영역 */}
+      <div className="w-full">
+        <div className="flex flex-row gap-2 w-full">
+          <input
+            type="text"
+            value={messageText}
+            onChange={(e) => setMessageText(e.target.value)}
+            onSubmit={(e) => {
+              console.log("전송 ",e.target.value);
+            }}
+            onKeyDown={handleKeyDown}
+            placeholder="메시지를 입력하세요..."
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <div className="flex flex-col justify-center">
+            <SizeComponent Component={KeyboardArrowUpIcon} onClick={handleSendMessage} className=" bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors" fontSize={32}/>
+          </div>
+        </div>
+      </div>
+      <div className="w-full flex flex-col justify-center py-4">
+        <div
+            className="w-full flex flex-row justify-center bg-blue-500 font-bold text-white py-2 rounded-xl cursor-pointer"
+            onClick={()=>{}}
+        >
+          참여하기
+        </div>
+      </div>
 
       {/* 입력 영역 */}
-      <div className="bg-white p-4 shadow-lg">
+      <div className="bg-white p-4 shadow-lg hidden">
         <div className="flex flex-row gap-2">
           <input
             type="text"
             value={messageText}
             onChange={(e) => setMessageText(e.target.value)}
+            onSubmit={(e) => {
+              console.log("전송 ",e.target.value);
+            }}
             onKeyDown={handleKeyDown}
             placeholder="메시지를 입력하세요..."
             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"

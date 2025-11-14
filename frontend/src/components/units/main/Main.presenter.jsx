@@ -17,7 +17,7 @@ export default function MainUI({categories, selectedCategory, setSelectedCategor
     const [active, setActive] = useState(0);
     return (
         <div className="flex flex-col w-full min-h-screen bg-[#F6F7F8] min-w-96">
-            <div className="fixed bottom-10 right-10 w-10 h-10 rounded-full bg-[#FF7A5A] cursor-pointer" onClick={()=>{onOpenPodModal()}}>
+            <div className="fixed bottom-28 right-10 w-10 h-10 rounded-full bg-[#FF7A5A] cursor-pointer" onClick={()=>{onOpenPodModal()}}>
                 <div className='h-full w-full flex flex-col justify-center'>
                     <div className='w-full flex flex-row justify-center text-[#FFFFFF] font-bold text-xl pb-1'>
                         +
@@ -52,7 +52,7 @@ export default function MainUI({categories, selectedCategory, setSelectedCategor
                 </div>
                 <div className='flex flex-row w-full overflow-x-scroll scrollbar-hide gap-2 max-w-[100vw]'>
                     {categories.map((value, index)=>{
-                        return (<div className={`p-2 px-4 rounded-full bg-[${index==selectedCategory?"#FF7A5A":"#FFFFFF"}] text-[${index==selectedCategory?"#FFFFFF":"#000000"}] min-w-fit cursor-pointer`} onClick={()=>{setSelectedCategory(index);}}>{value}</div>)
+                        return (<div key={index} className={`p-2 px-4 rounded-full bg-[${index==selectedCategory?"#FF7A5A":"#FFFFFF"}] text-[${index==selectedCategory?"#FFFFFF":"#000000"}] min-w-fit cursor-pointer ${index==selectedCategory?"font-bold":"font-semibold"}`} onClick={()=>{setSelectedCategory(index);}}>{value}</div>)
                     })}
                 </div>
                 <div className="flex flex-row justify-end w-full">
@@ -82,7 +82,7 @@ export default function MainUI({categories, selectedCategory, setSelectedCategor
                             <div 
                                 key={idx} 
                                 onClick={() => onPodClick && onPodClick(idx + 1)}
-                                className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer w-36"
+                                className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer w-40"
                             >
                                 <div className='bg-red-600 h-24 rounded-t-lg'></div>
                                 <div className='flex flex-col gap-1 p-3'>
@@ -90,7 +90,10 @@ export default function MainUI({categories, selectedCategory, setSelectedCategor
                                     <div className="text-[#888888] text-xs">{pod.content}</div>
                                     <div className='flex flex-row justify-between'>
                                         <div className="text-[#888888] text-xs">모집중 (2/6)명</div>
+                                        {Math.ceil((new Date(pod.event_time) - new Date()) / (1000 * 60 * 60 * 24))==0?
+                                        <div className='text-[#FDC862] text-xs font-semibold'>오늘 마감</div>:
                                         <div className='text-[#FDC862] text-xs font-semibold'>D-{Math.ceil((new Date(pod.event_time) - new Date()) / (1000 * 60 * 60 * 24))}</div>
+                                        }
                                     </div>
                                     <div className='flex flex-row gap-1'>
                                         <SizeComponent Component={PlaceOutlinedIcon} fontSize={16}/>

@@ -1,10 +1,10 @@
-import axios from './axiosInstance';
+import api from './axiosInstance';
 
 /**
  * 전체 POD 조회
  */
 export async function fetchAllPods() {
-    const response = await axios.get(`/pod/`);
+    const response = await api.get(`/pod/`);
     return response.data;
 }
 
@@ -37,7 +37,7 @@ export async function fetchAllPods() {
         url += `&status=INACTIVE`;
     else if(status === "모집중")
         url += `&status=ACTIVE`;
-    const response = await axios.get(url);
+    const response = await api.get(url);
     return response.data;
 }
 
@@ -48,7 +48,7 @@ export async function fetchAllPods() {
  * @param size 페이지 크기 (기본값: 10)
  */
  export async function fetchPodMembers(podId, page = 0, size = 10) {
-    const response = await axios.get('/pod/member', {
+    const response = await api.get('/pod/member', {
         params: { podId, page, size }
     });
     return response.data;

@@ -1,20 +1,32 @@
 import { Dialog, DialogTitle, DialogContent } from "@mui/material";
-import { Input, DatePicker, ConfigProvider, Button } from "antd";
+import { Input, DatePicker, ConfigProvider, Button, TimePicker } from "antd";
 import locale from "antd/locale/ko_KR";
-
+import { useEffect, useRef, useState } from "react";
+import KakaoMap from "./KakaoMap";
+import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
+import SizeComponent from "../../icon/SizeComponent";
 export default function AddPodPresenter({
                                                  isOpen,
                                                  onClose,
                                                  form,
                                                  handleChange,
+                                                 handleCategories,
                                                  handleDateChange,
+                                                 handleTimeChange,
+                                                 handlePlaceChange,
+                                                 handleAddressChange,
                                                  handleSubmit,
                                                  isDatePickerOpen,
                                                  setIsDatePickerOpen,
+                                                 isTimePickerOpen,
+                                                 setIsTimePickerOpen,
                                                  hasErrors,
                                                  errors
                                              }) {
-    const dialogHeight = isDatePickerOpen ? "850px" : hasErrors ? "650px" : "580px";
+    const dialogHeight = isDatePickerOpen||isTimePickerOpen ? "800px" : hasErrors ? "800px" : "700px";
+    const [selectedPlace, setSelectedPlace] = useState(null); // {lat, lng, address}
+
+    const [mapOpen, setMapOpen] = useState(false);
 
     return (
         <Dialog
@@ -25,21 +37,62 @@ export default function AddPodPresenter({
             }}
         >
             <DialogTitle className="flex justify-start pl-[50px] pt-10 text-black text-[23px] font-semibold">
-                팟 생성
+                새로운 Pod 생성
             </DialogTitle>
 
             <DialogContent className="p-6 flex flex-col justify-between h-full items-center">
                 <div className="space-y-4 pt-3 w-full px-7">
+                    {mapOpen && (
+                        <Dialog
+                        open={mapOpen}
+                        onClose={() => setMapOpen(false)}
+                        slotProps={{
+                            paper: { style: { width: "480px", height: "600px" } },
+                        }}
+                        >
+                        <DialogTitle className="flex justify-start pl-[50px] pt-10 text-black text-[23px] font-semibold">
+                            지도에서 위치 선택
+                        </DialogTitle>
+
+                        <DialogContent className="p-6 flex flex-col justify-between h-full items-center">
+                            <div className="w-full h-[400px]">
+                            <KakaoMap
+                                onSelect={setSelectedPlace}
+                            />
+                            </div>
+
+                            <div className="mt-2 text-sm w-full">
+                            {/* <div>위도: {selectedPlace?.lat}</div>
+                            <div>경도: {selectedPlace?.lng}</div> */}
+                            <div className="font-bold text-center">{selectedPlace?.address}</div>
+                            </div>
+
+                            <Button
+                            type="primary"
+                            size="large"
+                            className="w-[120px] bg-[#4368BA] text-white text-[16px] font-bold rounded-lg mb-6"
+                            onClick={() => {
+                                if (selectedPlace?.address) {
+                                    setSelectedPlace(selectedPlace);
+                                    handlePlaceChange(selectedPlace);
+                                }
+                                setMapOpen(false);
+                            }}
+                            >
+                            선택 완료
+                            </Button>
+                        </DialogContent>
+                        </Dialog>
+                    )}
                     {[
-                        { label: "제목", name: "podTitle", placeholder: "제목 입력", value: form.podTitle, error: errors.podTitle },
+                        // { label: "카테고리", name: "podCategory", placeholder: "카테고리 선택", value: form.podCategory, error: errors.podCategory },
+                        { label: "제목", name: "podTitle", placeholder: "Pod의 눈길을 끄는 제목을 입력하세요.", value: form.podTitle, error: errors.podTitle },
                         { label: "최소 인원", name: "minPeople", placeholder: "최소 인원 입력", value: form.minPeople, error: errors.minPeople },
                         { label: "최대 인원", name: "maxPeople", placeholder: "최대 인원 입력", value: form.maxPeople, error: errors.maxPeople },
-                        { label: "계좌번호", name: "accountNumber", placeholder: "계좌번호 입력", value: form.accountNumber, error: errors.accountNumber },
-                        { label: "소유주", name: "owner", placeholder: "소유주 입력", value: form.owner, error: errors.owner }
                     ].map((field, index) => (
                         <div key={index} className="flex flex-col space-y-1">
-                            <div className="flex flex-row items-center space-x-2 w-full">
-                                <label className="text-black text-[16px] font-medium w-[80px]">{field.label}</label>
+                            <div className="flex flex-col items-center space-x-2 w-full">
+                                <div className="text-black text-[16px] font-medium w-full">{field.label}</div>
                                 <Input
                                     name={field.name}
                                     value={field.value}
@@ -54,50 +107,81 @@ export default function AddPodPresenter({
                     ))}
 
                     <div className="flex flex-col space-y-1">
-                        <div className="flex flex-row items-center space-x-2 w-full">
-                            <label className="text-black text-[16px] font-medium w-[80px]">개설일</label>
-                            <ConfigProvider locale={locale}>
-                                <DatePicker
-                                    value={form.openDate}
-                                    onChange={handleDateChange}
-                                    format="YYYY-MM-DD"
-                                    placeholder="개설일 선택"
-                                    status={errors.openDate ? "error" : ""}
-                                    className="h-[45px] flex-1"
-                                    getPopupContainer={(trigger) => trigger.parentElement}
-                                    open={isDatePickerOpen}
-                                    onOpenChange={(open) => setIsDatePickerOpen(open)}
+                            <div className="flex flex-col items-center space-x-2 w-full">
+                                <div className="text-black text-[16px] font-medium w-full">카테고리</div>
+                                <Input
+                                    name={"podCategory"}
+                                    value={form.categories.join(" ")}
+                                    onChange={handleCategories}
+                                    placeholder={"카테고리를 입력하세요"}
+                                    status={errors.categories ? "error" : ""}
+                                    className="h-[45px] text-[16px] flex-1"
                                 />
-                            </ConfigProvider>
+                            </div>
+                            {errors.categories && <p className="text-red-500 text-sm mt-1 ml-[90px]">{errors.categories}</p>}
+                        </div>
+                    <div className="flex flex-col space-y-1">
+                        <div className="flex flex-col items-center space-x-2 w-full">
+                            <div className="text-black text-[16px] font-medium w-full">날짜</div>
+                            <div className="w-full">
+                                <ConfigProvider locale={locale}>
+                                    <DatePicker
+                                        value={form.openDate}
+                                        onChange={handleDateChange}
+                                        format="YYYY-MM-DD"
+                                        placeholder="날짜 선택"
+                                        status={errors.openDate ? "error" : ""}
+                                        className="h-[45px] w-full"
+                                        getPopupContainer={(trigger) => trigger.parentElement}
+                                        open={isDatePickerOpen}
+                                        onOpenChange={(open) => setIsDatePickerOpen(open)}
+                                        />
+                                </ConfigProvider>
+                            </div>
                         </div>
                         {errors.openDate && <p className="text-red-500 text-sm mt-1 ml-[90px]">{errors.openDate}</p>}
                     </div>
                     <div className="flex flex-col space-y-1">
-                        <div className="flex flex-row items-center space-x-2 w-full">
-                            <label className="text-black text-[16px] font-medium w-[80px]">마감일</label>
-                            <ConfigProvider locale={locale}>
-                                <DatePicker
-                                    value={form.expireDate}
-                                    onChange={handleDateChange}
-                                    format="YYYY-MM-DD"
-                                    placeholder="마감일 선택"
-                                    status={errors.expireDate ? "error" : ""}
-                                    className="h-[45px] flex-1"
-                                    getPopupContainer={(trigger) => trigger.parentElement}
-                                    open={isDatePickerOpen}
-                                    onOpenChange={(open) => setIsDatePickerOpen(open)}
-                                />
-                            </ConfigProvider>
+                        <div className="flex flex-col items-center space-x-2 w-full">
+                            <div className="text-black text-[16px] font-medium w-full">시간</div>
+                            <div className="w-full">
+                                <ConfigProvider locale={locale}>
+                                    <TimePicker
+                                        value={form.openTime}
+                                        onChange={handleTimeChange}
+                                        placeholder="시간 선택"
+                                        status={errors.openTime ? "error" : ""}
+                                        className="h-[45px] w-full"
+                                        getPopupContainer={(trigger) => trigger.parentElement}
+                                        open={isTimePickerOpen}
+                                        onOpenChange={(open) => setIsTimePickerOpen(open)}
+                                        />
+                                </ConfigProvider>
+                            </div>
                         </div>
-                        {errors.expireDate && <p className="text-red-500 text-sm mt-1 ml-[90px]">{errors.expireDate}</p>}
+                        {errors.openTime && <p className="text-red-500 text-sm mt-1 ml-[90px]">{errors.openTime}</p>}
+                    </div>
+                    <div key={9} className="flex flex-col space-y-1">
+                        <div className="flex flex-col items-center space-x-2 w-full">
+                            <div className="text-black text-[16px] font-medium w-full">장소 선택</div>
+                            <Input
+                                name={"place"}
+                                value={form.selectedPlace?.address}
+                                onChange={handleAddressChange}
+                                placeholder={"장소를 선택해주세요"}
+                                status={errors.place ? "error" : ""}
+                                className="h-[45px] text-[16px] flex-1"
+                                suffix={<SizeComponent Component={PlaceOutlinedIcon} fontSize={16} className={"text-[#BFBFBF]"} onClick={()=>{setMapOpen(true)}}/>}
+                            />
+                        </div>
+                        {errors.place && <p className="text-red-500 text-sm mt-1 ml-[90px]">{field.error}</p>}
                     </div>
 
                 </div>
-
                 <Button
                     type="primary"
                     size="large"
-                    className="w-[120px] bg-[#4368BA] text-white text-[16px] font-bold rounded-lg mb-6"
+                    className="w-[120px] bg-[#4368BA] text-white text-[16px] font-bold rounded-lg my-6"
                     onClick={handleSubmit}
                 >
                     추가

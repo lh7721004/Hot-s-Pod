@@ -10,4 +10,8 @@ class UserQueryRepository:
         with self.db.cursor() as cursor:
             sql = "SELECT * FROM User WHERE user_id = %s"
             cursor.execute(sql, (user_id,))
-            return cursor.fetchone()
+            res = cursor.fetchone()
+            sql = "SELECT profile_picture FROM kakaoapi WHERE user_id = %s"
+            cursor.execute(sql, (user_id,))
+            res["profile_picture"] = cursor.fetchone()["profile_picture"]
+            return res

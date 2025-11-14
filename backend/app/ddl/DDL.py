@@ -195,7 +195,7 @@ CREATE PROCEDURE `sp_CreatePod`(
 BEGIN
     DECLARE `new_pod_id` INT;
     DECLARE `_category_id` INT;
-    DECLARE `_index` INT DEFAULT 0;
+    DECLARE `_index` INT DEFAULT 1;
     DECLARE `_length` INT;
 
     START TRANSACTION;
@@ -283,7 +283,8 @@ END$$
 DELIMITER ;
 
 /* Initial Data */
-
+INSERT INTO `Category` (`category_id`, `category_name`, `parent_category_id`) VALUES
+(0,'', NULL);
 INSERT INTO `Category` (`category_name`, `parent_category_id`) VALUES
 ('스포츠', NULL),
 ('문화·예술', NULL),

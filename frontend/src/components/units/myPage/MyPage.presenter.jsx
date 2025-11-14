@@ -8,6 +8,10 @@ import Box from '@mui/material/Box';
 import { useState } from 'react';
 import SizeComponent from "../../common/icon/SizeComponent";
 import Footer from "../../common/layout/footer/index.jsx"
+import { useMe } from "../../../../src/queries/useMe.js";
+import { useDispatch } from "react-redux";
+import AddPodContainer from "../../common/modals/AddPod/AddPodContainer.jsx";
+
 function CustomTabPanel(props) {
   const { children, value, index, ...other } = props;
 
@@ -41,10 +45,31 @@ function Card({title,description,peoples,image}){
 export default function MyPageUI() {
     const [value, setValue] = useState(0);
     const [active, setActive] = useState(3);
+    const { data, isLoading, isError } = useMe();
+    const [user,setUser] = useState(data);
+    const [isPodModalOpen, setIsPodModalOpen] = useState(false);
+    const dispatch = useDispatch();
+
+    const handleOpenPodModal = () => {
+            setIsPodModalOpen(true);
+        };
+
+    const handleClosePodModal = () => {
+        setIsPodModalOpen(false);
+    };
 
     const handleChange = (event, newValue) => {
         setValue(newValue);
     };
+    const handleSavePod = async (podData) => {
+            try {
+                await dispatch(createPod(podData)).unwrap();
+                alert('POD가 생성되었습니다!');
+                dispatch(fetchPods());
+            } catch (error) {
+                alert('POD 생성에 실패했습니다: ' + error.message);
+            }
+        };
     return(
         <div className="flex flex-col w-full gap-8">
             <div className="flex flex-row justify-between border-b-[#E9EBEE] border-b-[2px] p-6">
@@ -53,11 +78,10 @@ export default function MyPageUI() {
                 <SizeComponent Component={SettingsIcon} className={"cursor-pointer"}/>
             </div>
             <div className='flex flex-row w-full justify-center'>
-                <div className='w-24 h-24 bg-red-500 rounded-full border-purple-600 border-[3px]'>
-                </div>
+                <img src={user?.profile_picture} className='w-24 h-24 rounded-full border-purple-600 border-[3px]'/>
             </div>
             <div className='flex flex-row justify-center font-bold text-2xl'>
-                Hotspod User
+                {user?.username}
             </div>
             <div className='px-4'>
                 <div className='w-full rounded-full bg-purple-600 py-2 text-center text-[#FFFFFF] font-semibold cursor-pointer'>
@@ -93,7 +117,7 @@ export default function MyPageUI() {
                             <div className='flex flex-row justify-center'>
                                 <SizeComponent Component={AddCircleOutlineIcon} className={"text-[#9CA3AF]"} fontSize={48}/>                        
                             </div>
-                            <div className='flex flex-col gap-5 text-[#888888]'>
+                            <div className='flex flex-col gap-5 text-[#888888]' onClick={handleOpenPodModal}>
                                 <div className='text-center'>아직 생성한 Pod이 없어요.</div>
                                 <div className='text-center'>새로운 Pod을 만들어 모임을 시작해보세요!</div>
                                 <div className='flex flex-row w-full justify-center'>
@@ -139,6 +163,11 @@ export default function MyPageUI() {
                     image={"Image"}
                 />
             </CustomTabPanel>
+            <AddPodContainer 
+                isOpen={isPodModalOpen}
+                onClose={handleClosePodModal}
+                onSave={handleSavePod}
+            />
             <Footer active={active} setActive={setActive}/>
         </div>
     )
