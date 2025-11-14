@@ -30,9 +30,11 @@ export default function MainUI({categories, selectedCategory, setSelectedCategor
                     <SizeComponent Component={LocalFireDepartmentOutlinedIcon} className="text-[#FF7C1C] text-[3red]" fontSize={"3rem"} />
                     <span className="font-bold text-xl flex flex-col justify-center">Hotspod</span>
                 </div>
-                <div className='flex flex-row gap-8'>
-                    <SizeComponent Component={NotificationsNoneIcon} fontSize={"2rem"}/>
-                    <SizeComponent Component={PermIdentityOutlinedIcon} fontSize={"2rem"} className={"cursor-pointer"} onClick={()=>{navigate("/myPage");}}/>
+                <div className="flex flex-col justify-center px-2">
+                    <div className='flex flex-row gap-4'>
+                        <SizeComponent Component={NotificationsNoneIcon} fontSize={"2rem"}/>
+                        <SizeComponent Component={PermIdentityOutlinedIcon} fontSize={"2rem"} className={"cursor-pointer"} onClick={()=>{navigate("/myPage");}}/>
+                    </div>
                 </div>
             </div>
 
@@ -55,7 +57,7 @@ export default function MainUI({categories, selectedCategory, setSelectedCategor
                 </div>
                 <div className="flex flex-row justify-end w-full">
                     <div className='w-32'>
-                        <FormControl variant="standard" sx={{ m: 1, minWidth: 120 }}>
+                        <FormControl variant="standard" sx={{ m: 1, minWidth: 100 }}>
                             <InputLabel id="demo-simple-select-label"></InputLabel>
                             <Select
                                     labelId="demo-simple-select-label"
@@ -64,6 +66,7 @@ export default function MainUI({categories, selectedCategory, setSelectedCategor
                                     label="orderBy"
                                     onChange={handleChange}
                                     disableUnderline
+                                    align="center"
                                 >
                                 <MenuItem value={"최신순"}>최신순</MenuItem>
                                 <MenuItem value={"업데이트순"}>업데이트순</MenuItem>
@@ -75,23 +78,23 @@ export default function MainUI({categories, selectedCategory, setSelectedCategor
                 {/* POD 목록 */}
                 <div className="flex flex-col gap-4">
                     <div className="flex flex-wrap gap-4">
-                        {pods.map((pod, idx) => (
+                        {pods&&pods.map((pod, idx) => (
                             <div 
                                 key={idx} 
                                 onClick={() => onPodClick && onPodClick(idx + 1)}
-                                className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer"
+                                className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer w-36"
                             >
-                                <div className='bg-red-600 w-full min-w-36 h-24 rounded-t-lg'></div>
+                                <div className='bg-red-600 h-24 rounded-t-lg'></div>
                                 <div className='flex flex-col gap-1 p-3'>
-                                    <div className="font-bold text-lg max-w-36 truncate">{pod.title}12345678978979878979800000000000000000000000</div>
-                                    <div className="text-[#888888] text-xs">#123 #456</div>
+                                    <div className="font-bold text-lg truncate">{pod.title}</div>
+                                    <div className="text-[#888888] text-xs">{pod.content}</div>
                                     <div className='flex flex-row justify-between'>
                                         <div className="text-[#888888] text-xs">모집중 (2/6)명</div>
-                                        <div className='text-[#FDC862] text-xs font-semibold'>D-3</div>
+                                        <div className='text-[#FDC862] text-xs font-semibold'>D-{Math.ceil((new Date(pod.event_time) - new Date()) / (1000 * 60 * 60 * 24))}</div>
                                     </div>
                                     <div className='flex flex-row gap-1'>
                                         <SizeComponent Component={PlaceOutlinedIcon} fontSize={16}/>
-                                        <div className="text-xs text-gray-400">강남역스터디카페</div>
+                                        <div className="text-xs text-gray-400">{pod.place}</div>
                                     </div>
                                 </div>
                             </div>

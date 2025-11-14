@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import MainUI from "./Main.presenter.jsx";
 import AddPodContainer from "../../common/modals/AddPod/AddPodContainer.jsx";
 import { useDispatch } from "react-redux";
 import { createPod, fetchPods } from "@redux/slices/podSlice.js";
 import { useMe } from "../../../queries/useMe.js";
+import { usePods } from "../../../queries/usePods.js";
 
 
 export default function Main() {
@@ -12,6 +13,9 @@ export default function Main() {
     const [selectedCategory,setSelectedCategory] = useState(0); 
     const [isPodModalOpen, setIsPodModalOpen] = useState(false);
     const { data, isLoading, isError } = useMe();
+    const [limit,setLimit] = useState(10);
+    const [offset,setOffset] = useState(0);
+    const { data:podsData, isLoading:isPodsLoading, isError:isPodsError } = usePods({limit,offset});
     const [open, setOpen] = useState(false);
     const [orderBy, setOrderBy] = useState("최신순");
     const handleClick = (event) => {
@@ -20,10 +24,7 @@ export default function Main() {
     const handleClose = () => {
         setAnchorEl(null);
     };
-    useEffect(() => {
-        if (data)
-            console.log("[Main.container.jsx] me:", data);
-    }, [data]);
+    
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
@@ -54,40 +55,52 @@ export default function Main() {
     };
 
     const handleChange = (event) => {
-        console.log(event)
         setOrderBy(event.target.value);
     }
 
-    let announcements = [
-        {title: '공지1', content: '공지내용 1 공지내용 1 공지내용 1 공지내용 1공지내용  1 공지내용 1공지내용 1 공지내용 1  공지내용 1공지내용 1공지내용 1공지내용 1', date: '2024-01-12'},
-        {title: '공지1', content: '공지내용 1', date: '2024-01-12'},
-        {title: '공지1', content: '공지내용 1', date: '2024-01-12'},
-        {title: '공지1', content: '공지내용 1', date: '2024-01-12'},
-        {title: '공지1', content: '공지내용 1', date: '2024-01-12'},
-        {title: '공지1', content: '공지내용 1', date: '2024-01-12'}
-    ]
+    const [pods,setPods] = useState(isPodsLoading?[]:podsData);
+    useEffect(() => {
+        if (data)
+            console.log("[Main.container.jsx] me:", data);
+    }, [data]);
+    useEffect(()=>{
+        console.log("[Main.container.jsx] podsData:",podsData);
+        setPods(podsData);
+    },[podsData]);
+    const sortedPods = useMemo(() => {
+        if (!podsData) return [];
 
-    let pods = [
-        {title: 'POD 1', content: 'IT 개발 POD', date: '2025-01-12'},
-        {title: 'POD 2', content: '음악 POD', date: '2025-01-12'},
-        {title: 'POD 3', content: '봉사 POD', date: '2025-01-12'}
-    ]
+        const arr = [...podsData];
 
+        if (orderBy === "최신순") {
+        // created_at 최신순 (내림차순)
+        arr.sort(
+            (a, b) => new Date(b.created_at) - new Date(a.created_at)
+        );
+        } else if (orderBy === "업데이트순") {
+        // updated_at 최신순 (내림차순)
+        arr.sort(
+            (a, b) => new Date(b.updated_at) - new Date(a.updated_at)
+        );
+        } else if (orderBy === "마감임박순") {
+        // event_time이 가장 가까운 순서 (마감 임박)
+        arr.sort(
+            (a, b) => new Date(a.event_time) - new Date(b.event_time)
+        );
+        }
+
+        return arr;
+    }, [podsData, orderBy]);
     return (
         <>
             <MainUI 
-                // open={open} 
-                // setOpen={setOpen}
-                // handleClick={handleClick}
-                // handleClose={handleClose}
                 categories={categories}
                 selectedCategory={selectedCategory}
                 setSelectedCategory={setSelectedCategory}
                 orderBy={orderBy}
                 handleChange={handleChange}
-                pods={pods}
+                pods={sortedPods}
                 onOpenPodModal={handleOpenPodModal}
-                // onViewAllPods={handleViewAllPods}
                 onPodClick={handlePodClick}
             />
             <AddPodContainer 
