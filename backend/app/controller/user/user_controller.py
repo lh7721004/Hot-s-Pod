@@ -7,6 +7,7 @@ from app.repository.user.user_query_repository import UserQueryRepository
 from app.service.user.user_service import UserService
 from app.schemas.user import UserCreateRequest, UserResponse
 from app.utils.auth import get_current_user_id
+from app.utils.auth import get_current_user_id_from_cookie
 from typing import List
 
 router = APIRouter(prefix="/users", tags=["Users"])
@@ -32,7 +33,7 @@ async def create_user(
 
 @router.get("/me", response_model=UserResponse)
 async def get_my_profile(
-    current_user_id: int = Depends(get_current_user_id),
+    current_user_id: int = Depends(get_current_user_id_from_cookie),
     service: UserService = Depends(get_user_service)
 ):
     """현재 로그인한 사용자 정보 조회 (JWT 인증 필요)"""

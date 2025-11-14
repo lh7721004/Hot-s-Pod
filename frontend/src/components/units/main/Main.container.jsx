@@ -4,25 +4,19 @@ import MainUI from "./Main.presenter.jsx";
 import AddPodContainer from "../../common/modals/AddPod/AddPodContainer.jsx";
 import { useDispatch } from "react-redux";
 import { createPod, fetchPods } from "@redux/slices/podSlice.js";
+import { useMe } from "../../../queries/useMe.js";
+
 
 export default function Main() {
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isPodModalOpen, setIsPodModalOpen] = useState(false);
-    const navigate = useNavigate();
-    const dispatch = useDispatch();
+    const { data, isLoading, isError } = useMe();
 
     useEffect(() => {
-        // 로그인 상태 확인
-        const token = localStorage.getItem('access_token');
-        setIsLoggedIn(!!token);
-    }, []);
-
-    const handleLogout = () => {
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('is_authenticated');
-        setIsLoggedIn(false);
-        window.location.reload();
-    };
+        if (data)
+            console.log("[Main.container.jsx] me:", data);
+    }, [data]);
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     const handleOpenPodModal = () => {
         setIsPodModalOpen(true);
@@ -70,8 +64,6 @@ export default function Main() {
             <MainUI 
                 announcements={announcements} 
                 pods={pods}
-                isLoggedIn={isLoggedIn}
-                onLogout={handleLogout}
                 onOpenPodModal={handleOpenPodModal}
                 onViewAllPods={handleViewAllPods}
                 onPodClick={handlePodClick}
